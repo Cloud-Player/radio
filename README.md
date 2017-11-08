@@ -1,7 +1,7 @@
 # cloud-player radio
 
 ## setup
-- download raspbian lite `https://www.raspberrypi.org/downloads/raspbian`
+- download raspbian lite
 ```
 curl -L https://downloads.raspberrypi.org/raspbian_lite_latest | tar -xf - -C ~/Desktop/
 ```
@@ -16,7 +16,7 @@ open /Applications/Etcher.app
 cd /Volumes/boot
 touch ssh
 ```
-- create a file named `wpa_supplicant.conf.` and insert your wifi credentials
+- create a file named `wpa_supplicant.conf` and insert your wifi credentials
 ```
 ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
 network={
@@ -39,3 +39,8 @@ sudo raspi-config
 ```
 - change your user password to something other that the default
 - set your locale to `en_US.UTF-8` (hint: use spacebar to de/select)
+- update your raspbian software
+```
+sudo apt-get update
+sudo apt-get upgrade -y
+```
