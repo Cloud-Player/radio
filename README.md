@@ -47,3 +47,12 @@ sudo apt-get update
 sudo apt-get upgrade -y
 sudo apt-get install python-pip python-alsaaudio chromium-browser
 ```
+
+## configure miniamp
+
+https://www.hifiberry.com/build/documentation/configuring-linux-3-18-x
+
+## configure alsa
+
+https://support.hifiberry.com/hc/en-us/articles/205377202-Adding-software-volume-control
+
