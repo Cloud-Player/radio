@@ -56,3 +56,21 @@ https://www.hifiberry.com/build/documentation/configuring-linux-3-18-x
 
 https://support.hifiberry.com/hc/en-us/articles/205377202-Adding-software-volume-control
 
+## radio engine
+
+### install
+```
+python3 -m venv --upgrade --copies .
+bin/pip install -e .
+```
+
+### develop
+```
+bin/api
+```
+
+### test
+```
+bin/pip install -e .[test]
+bin/test
+```
