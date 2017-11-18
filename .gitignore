@@ -1,0 +1,10 @@
+.cache
+.eggs
+*.pyc
+*.pyo
+bin
+dist
+include
+lib
+pip-selfcheck.json
+pyvenv.cfg
