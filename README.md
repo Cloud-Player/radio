@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/Cloud-Player/radio.svg?branch=master)](https://travis-ci.org/Cloud-Player/radio)
+
 # cloud-player radio
 
 ## setup
