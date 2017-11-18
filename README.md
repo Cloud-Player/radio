@@ -45,4 +45,5 @@ sudo raspi-config
 ```
 sudo apt-get update
 sudo apt-get upgrade -y
+sudo apt-get install python-pip python-alsaaudio chromium-browser
 ```
