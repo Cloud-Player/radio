@@ -41,12 +41,21 @@ sudo raspi-config
 ```
 - change your user password to something other that the default
 - set your locale to `en_US.UTF-8` (hint: use spacebar to de/select)
+- under `Interfacing Options` enable the SPI kernel module
+
 - update your raspbian software
 ```
 sudo apt-get update
 sudo apt-get upgrade -y
-sudo apt-get install python-pip python-alsaaudio chromium-browser
+sudo apt-get install python-pip python-alsaaudio chromium-browser libjpeg9 libjpeg9-dev python-pillow
 ```
+
+- add your user to the spi and gpio groups
+- for reference see https://luma-oled.readthedocs.io/en/latest/hardware.html#tips-for-connecting-the-display
+```
+sudo usermod -a -G spi,gpio pi
+```
+
 
 ## configure miniamp
 
