@@ -47,7 +47,16 @@ sudo raspi-config
 ```
 sudo apt-get update
 sudo apt-get upgrade -y
-sudo apt-get install python-pip python-alsaaudio chromium-browser libjpeg9 libjpeg9-dev python-pillow
+sudo apt-get install \
+chromium-browser \
+git \
+libjpeg9 \
+libjpeg9-dev \
+python-alsaaudio \
+python3-pillow \
+python3-pip \
+python3-dev \
+python3-venv
 ```
 
 - add your user to the spi and gpio groups
