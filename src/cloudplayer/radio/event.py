@@ -1,5 +1,6 @@
 import collections
 
+import tornado.ioloop
 import tornado.queues
 
 
@@ -11,10 +12,13 @@ class Event(object):
         self.value = value
 
 
-class EventManager(object):
+class EventManager(tornado.ioloop.PeriodicCallback):
 
     subscriptions = collections.defaultdict(set)
     queue = tornado.queues.Queue(maxsize=1024)
+
+    def __init__(self, callback_time=100):
+        super().__init__(self.process, callback_time)
 
     @classmethod
     def add_subscription(cls, action, component):

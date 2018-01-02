@@ -18,6 +18,7 @@ import tornado.web
 
 from cloudplayer.radio.gpio import GPIO
 from cloudplayer.radio import component
+from cloudplayer.radio import event
 from cloudplayer.radio import handler
 
 
@@ -78,6 +79,7 @@ def main():
     GPIO.setup()
     define_options()
     configure_httpclient()
+    em = event.EventManager()
     app = make_app()
     app.listen(opt.options.port)
     app_log.info('listening at localhost:%s', opt.options.port)
@@ -86,6 +88,7 @@ def main():
     signal.signal(signal.SIGTERM, teardown)
 
     try:
+        em.start()
         ioloop.start()
     except KeyboardInterrupt:
         teardown()
