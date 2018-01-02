@@ -2,7 +2,9 @@
 .eggs
 *.pyc
 *.pyo
+*.egg-info
 bin
+share
 dist
 include
 lib
