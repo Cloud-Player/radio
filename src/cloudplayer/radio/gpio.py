@@ -6,7 +6,7 @@
     :license: Apache-2.0, see LICENSE for details
 """
 try:
-    from RPi import GPIO as rpi_gpio
+    import RPi.GPIO as rpi_gpio
 except ImportError:
     import mock
 
