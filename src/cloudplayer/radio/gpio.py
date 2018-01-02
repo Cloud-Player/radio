@@ -1,6 +1,6 @@
 """
-    cloudplayer.radio.mock_io
-    ~~~~~~~~~~~~~~~~~~~~~~~~~
+    cloudplayer.radio.gpio
+    ~~~~~~~~~~~~~~~~~~~~~~
 
     :copyright: (c) 2017 by the cloudplayer team
     :license: Apache-2.0, see LICENSE for details
@@ -38,19 +38,24 @@ class MockGPIO(mock.MagicMock):
     PWM = 43
 
 
-class Proxy(object):
+class GPIOManager(object):
 
     def __init__(self):
         self.gpio = None
 
-    def __repr__(self):
-        return '<Proxy for %s>' % repr(self.gpio)
+    def setup(self):
+        self.gpio.setmode(GPIO.BCM)
+        self.gpio.setwarnings(False)
 
     def __getattr__(self, attr):
         return getattr(self.gpio, attr)
 
+    def teardown(self):
+        self.gpio.cleanup()
 
-GPIO = Proxy()
+
+GPIO = GPIOManager()
+
 if rpi_gpio is None:
     GPIO.gpio = MockGPIO()
 else:

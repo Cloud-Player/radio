@@ -5,185 +5,89 @@
     :copyright: (c) 2017 by the cloudplayer team
     :license: Apache-2.0, see LICENSE for details
 """
-import collections
-import functools
-import logging
-import uuid
+import signal
+import sys
 
-import pygame
-import pygame.time
+from tornado.log import app_log
+import luma.core.interface.serial
+import luma.oled.device
+import tornado.httpclient
+import tornado.ioloop
+import tornado.options as opt
+import tornado.web
 
 from cloudplayer.radio.gpio import GPIO
+from cloudplayer.radio import component
+from cloudplayer.radio import handler
 
 
-class Config(object):
-
-    FRAMES_PER_SECOND = 60
-    SWITCH_DEBOUNCE = 10
-
-
-class Component(object):
-
-    def __init__(self):
-        self.uuid = uuid.uuid4().hex
-
-    def __call__(self, event):
-        raise NotImplementedError()
-
-    def publish(self, action, value=None):
-        event = pygame.event.Event(
-            pygame.USEREVENT, action=action, target=self, value=value)
-        pygame.event.post(event)
-
-    def subscribe(self, action, target):
-        EventManager.add_subscription(action, target, self)
+def define_options():
+    """Defines global configuration options"""
+    opt.define('config', type=str, default='config.py')
+    opt.define('port', type=int, default=8050)
+    opt.parse_command_line()
+    opt.define('connect_timeout', type=int, default=1, group='httpclient')
+    opt.define('request_timeout', type=int, default=3, group='httpclient')
+    opt.define('max_redirects', type=int, default=1, group='httpclient')
+    opt.define('debug', type=bool, group='server')
+    opt.define('xheaders', type=bool, group='server')
+    opt.define('static_path', type=str, group='server')
+    opt.define('allowed_origins', type=str, default='*')
+    opt.define('switch_debounce', type=int, default=10)
+    opt.define('ticks_per_second', type=int, default=60)
+    opt.parse_config_file(opt.options.config)
 
 
-class Channel(Component):
-
-    def __init__(self, channel, in_out, **kw):
-        GPIO.setup(channel, in_out, **kw)
-        self.channel = channel
-
-    def __del__(self):
-        GPIO.cleanup(self.channel)
-
-    def get(self):
-        return GPIO.input(self.channel)
+def configure_httpclient():
+    """Try to configure an async httpclient"""
+    defaults = opt.options.group_dict('httpclient')
+    try:
+        tornado.httpclient.AsyncHTTPClient.configure(
+            'tornado.curl_httpclient.CurlAsyncHTTPClient', defaults=defaults)
+    except ImportError:
+        app_log.warn('could not setup curl client, using simple http instead')
+        tornado.httpclient.AsyncHTTPClient.configure(None, defaults=defaults)
 
 
-class Input(Channel):
-
-    RISING = 'RISING'
-    FALLING = 'FALLING'
-
-    def __init__(self, channel):
-        super(Input, self).__init__(
-            channel, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        GPIO.add_event_detect(
-            channel,
-            GPIO.RISING,
-            callback=functools.partial(self.publish, self, Input.RISING),
-            bouncetime=SWITCH_DEBOUNCE)
-        GPIO.add_event_detect(
-            channel,
-            GPIO.FALLING,
-            callback=functools.partial(self.publish, self, Input.FALLING),
-            bouncetime=Config.SWITCH_DEBOUNCE)
-
-    def __del__(self):
-        GPIO.remove_event_detect(self.channel)
-        super(Input, self).__del__()
+def make_app():
+    """Configure routes and application options"""
+    return tornado.web.Application([
+        (r'^/.*', handler.FallbackHandler),
+    ], **opt.options.group_dict('server'))
 
 
-class Output(Channel):
-
-    def __init__(self, channel):
-        self.__init__(channel, GPIO.OUT, initial=GPIO.LOW)
-
-    def put(self, state):
-        GPIO.output(self.channel, state)
-
-    def toggle(self):
-        self.put(not self.get())
+def teardown(*_):
+    """Teardown raspberry gpio and tornado ioloop"""
+    app_log.info('engine shutting down')
+    ioloop = tornado.ioloop.IOLoop.current()
+    ioloop.stop()
+    GPIO.teardown()
+    sys.exit(0)
 
 
-class RotaryEncoder(Component):
-
-    ROTATE_LEFT = 'ROTATE_LEFT'
-    ROTATE_RIGHT = 'ROTATE_RIGHT'
-    PUSH_BUTTON = 'PUSH_BUTTON'
-
-    def __init__(self, clk, dt):
-        self.clk = Input(clk)
-        self.dt = Input(dt)
-        self.subscribe(Output.RISING, self.clk)
-        self.subscribe(Output.FALLING, self.clk)
-
-    def __call__(self, event):
-        if (event.action == Output.RISING) == self.dt.get():
-            self.publish(RotaryEncoder.ROTATE_LEFT)
-        else:
-            self.publish(RotaryEncoder.ROTATE_RIGHT)
-
-
-class Potentiometer(Component):
-
-    VALUE_CHANGED = 'VALUE_CHANGED'
-
-    def __init__(self, clk, dt, initial=0.0, steps=32.0):
-        self.rotary_encoder = RotaryEncoder(clk, dt)
-        self.subscribe(RotaryEncoder.ROTATE_LEFT, self.rotary_encoder)
-        self.subscribe(RotaryEncoder.ROTATE_RIGHT, self.rotary_encoder)
-        self.value = initial
-        self.step = 1.0 / steps
-
-    def __call__(self, event):
-        if event.action == RotaryEncoder.ROTATE_LEFT:
-            self.value = min(self.value + self.step, 1.0)
-        else:
-            self.value = max(self.value - self.step, 0.0)
-        self.publish(Potentiometer.VALUE_CHANGED, self.value)
-
-
-class LEDArray(Component):
-
-    def __init__(self, *leds):
-        self.leds = list(Output(l) for l in leds)
-
-    def __call__(self, event):
-        for index, led in enumerate(self.leds):
-            if (event.value / (1.0 / len(self.leds))) > index:
-                self.put(GPIO.HIGH)
-            else:
-                self.put(GPIO.LOW)
-
-
-class EventManager(object):
-
-    subscriptions = collections.defaultdict(set)
-
-    @classmethod
-    def add_subscription(cls, event, component):
-        if event not in subscriptions:
-            cls.subscriptions[event] = set()
-        cls.subscriptions[event].add(component)
-
-    @classmethod
-    def process(cls):
-        while pygame.event.peek(pygame.USEREVENT):
-            event = pygame.event.poll()
-            for component in cls.subscriptions[event]:
-                component(event)
-
-
-def setup():
-    """Setup raspberry gpio and pygame engine"""
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setwarnings(False)
-    pygame.init()
-    pygame.event.set_allowed(None)
-    pygame.event.set_allowed([pygame.USEREVENT])
-
-
-def teardown():
-    """Teardown raspberry gpio and pygame engine"""
-    GPIO.cleanup()
+def compose():
+    """Compose hardware and virtual components"""
+    frequency = component.RotaryEncoder(5, 6)
+    volume = component.Potentiometer(17, 27)
+    serial = luma.core.interface.serial.spi(device=0, port=0)
+    display = component.Display(luma.oled.device.ssd1351, serial)
 
 
 def main():
     """Main application entry point"""
-    setup()
-    clock = pygame.time.Clock()
-    frequency = RotaryEncoder(5, 6)
-    volume = Potentiometer(17, 27)
-    led_array = LEDArray(16, 2, 3, 4, 13, 26)
-    led_array.subscribe(Potentiometer.VALUE_CHANGED, volume)
+    GPIO.setup()
+    define_options()
+    configure_httpclient()
+    app = make_app()
+    app.listen(opt.options.port)
+    app_log.info('listening at localhost:%s', opt.options.port)
+    ioloop = tornado.ioloop.IOLoop.current()
+
+    signal.signal(signal.SIGTERM, teardown)
+
     try:
-        while True:
-            EventManager.process()
-            clock.tick(Config.FRAMES_PER_SECOND)
-    finally:
+        ioloop.start()
+    except KeyboardInterrupt:
         teardown()
 
 

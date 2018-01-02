@@ -20,7 +20,8 @@ setup(
         'RPi.GPIO' if (
             'raspberrypi' in os.uname()
         ) else 'mock',
-        'pygame',
+        'tornado',
+        'luma.oled',
         'setuptools'
     ],
     extras_require={
