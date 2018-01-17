@@ -1,5 +1,6 @@
 .cache
 .eggs
+.idea
 *.pyc
 *.pyo
 *.egg-info
