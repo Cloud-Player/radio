@@ -17,7 +17,7 @@ before_deploy:
 script: echo yo
 deploy:
   - provider: script
-    script: src/web/shell/release_on_github_pages.sh
+    script: shell/release_on_github_pages.sh
     skip_cleanup: true
     on:
       branch: master
