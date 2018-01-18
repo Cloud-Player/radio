@@ -14,10 +14,11 @@ before_deploy:
 - cd src/web
 - npm install
 - npm run release
+- cd ../..
 script: echo yo
 deploy:
   - provider: script
-    script: shell/release_on_github_pages.sh
+    script: src/web/shell/release_on_github_pages.sh
     skip_cleanup: true
     on:
       branch: master
