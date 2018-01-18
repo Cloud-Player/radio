@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-RELEASE_FOLDER="./dist"
+RELEASE_FOLDER="./src/web/dist"
 RELEASE_BRANCH="gh-pages"
 RELEASE_GIT_NAME="Bob Builder"
 RELEASE_GIT_MAIL="bob@builder.com"
