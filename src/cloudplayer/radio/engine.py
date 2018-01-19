@@ -61,13 +61,13 @@ def make_app(**kw):
 
 def compose():
     """Compose hardware and virtual components"""
-    volume = component.Potentiometer(17, 27)
-    # interface = luma.core.interface.serial.spi(device=0, port=0)
-    # device = luma.oled.device.ssd1351(interace)
-    device = luma.core.device.dummy()
+    # volume = component.Potentiometer(17, 27)
+    interface = luma.core.interface.serial.spi(device=0, port=0)
+    device = luma.oled.device.ssd1351(interface)
+    # device = luma.core.device.dummy()
     display = component.Display(device)
-    display.subscribe(volume.VALUE_CHANGED, volume)
-    app = make_app(volume=volume)
+    # display.subscribe(volume.VALUE_CHANGED, volume)
+    app = make_app(volume=None)
     player = component.CloudPlayer()
     display.subscribe(player.AUTHORIZATION_PROMPT, player)
 

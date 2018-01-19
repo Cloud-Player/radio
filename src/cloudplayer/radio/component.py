@@ -8,6 +8,7 @@
 import functools
 import uuid
 
+from PIL import ImageFont
 from tornado.log import app_log
 import luma.core.render
 import tornado.escape
@@ -90,6 +91,13 @@ class Output(Channel):
 
 class Display(Component):
 
+    light_font = ImageFont.truetype(
+        'src/cloudplayer/radio/font/RobotoMono-Light.ttf', 22, 0, 'unic')
+    regular_font = ImageFont.truetype(
+        'src/cloudplayer/radio/font/RobotoMono-Regular.ttf', 22, 0, 'unic')
+    bold_font = ImageFont.truetype(
+        'src/cloudplayer/radio/font/RobotoMono-Bold.ttf', 22, 0, 'unic')
+
     def __init__(self, device):
         super().__init__()
         self.device = device
@@ -101,7 +109,7 @@ class Display(Component):
 
     def text(self, text):
         with luma.core.render.canvas(self.device) as draw:
-            draw.text((30, 40), text, fill='white')
+            draw.text((30, 40), text, fill='white', font=self.regular_font)
 
     def __call__(self, event):
         if event.action == Potentiometer.VALUE_CHANGED:
@@ -223,7 +231,7 @@ class CloudPlayer(Component):
         self.token_callback = tornado.ioloop.PeriodicCallback(
             self.check_token, 5 * 1000)
         self.token_callback.start()
-        self.publish(self.AUTHORIZATION_PROMPT, 'enter %s' % self.token['id'])
+        self.publish(self.AUTHORIZATION_PROMPT, 'enter\n%s' % self.token['id'])
         app_log.info('create %s' % self.token)
 
     @tornado.gen.coroutine
@@ -233,5 +241,5 @@ class CloudPlayer(Component):
         if self.token['claimed']:
             self.token_callback.stop()
             self.login_callback.stop()
-            self.publish(self.AUTHORIZATION_PROMPT, 'auth complete')
+            self.publish(self.AUTHORIZATION_PROMPT, 'auth done')
         app_log.info('check %s' % self.token)
