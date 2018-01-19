@@ -216,6 +216,8 @@ class CloudPlayer(Component):
             assert self.cookie
         except (AssertionError, IOError):
             self.start_login()
+        else:
+            self.say_hello()
 
     @tornado.gen.coroutine
     def fetch(self, url, **kw):
@@ -276,4 +278,5 @@ class CloudPlayer(Component):
             if account['provider_id'] == 'cloudplayer':
                 if account['title']:
                     title = account['title']
+        app_log.info('hello {}'.format(title))
         self.publish(self.AUTH_DONE, 'hello\n{}'.format(title))
