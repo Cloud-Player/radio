@@ -11,6 +11,7 @@ import sys
 from tornado.log import app_log
 import luma.core.interface.serial
 import luma.oled.device
+import luma.core.device
 import tornado.httpclient
 import tornado.ioloop
 import tornado.options as opt
@@ -19,12 +20,11 @@ import tornado.web
 from cloudplayer.radio.gpio import GPIO
 from cloudplayer.radio import component
 from cloudplayer.radio import event
-from cloudplayer.radio import handler
 
 
 def define_options():
     """Defines global configuration options"""
-    opt.define('config', type=str, default='config.py')
+    opt.define('config', type=str, default='dev.py')
     opt.define('port', type=int, default=8050)
     opt.parse_command_line()
     opt.define('connect_timeout', type=int, default=1, group='httpclient')
@@ -33,9 +33,8 @@ def define_options():
     opt.define('debug', type=bool, group='server')
     opt.define('xheaders', type=bool, group='server')
     opt.define('static_path', type=str, group='server')
-    opt.define('allowed_origins', type=str, default='*')
-    opt.define('switch_debounce', type=int, default=10)
-    opt.define('ticks_per_second', type=int, default=60)
+    opt.define('allowed_origin', type=str, default='*')
+    opt.define('api_base_url', type=str, default='/')
     opt.parse_config_file(opt.options.config)
 
 
@@ -50,11 +49,27 @@ def configure_httpclient():
         tornado.httpclient.AsyncHTTPClient.configure(None, defaults=defaults)
 
 
-def make_app():
+def make_app(**kw):
     """Configure routes and application options"""
-    return tornado.web.Application([
-        (r'^/.*', handler.FallbackHandler),
+    # TODO: Make the app a component as well
+    app = tornado.web.Application([
+        (r'^/websocket', component.WebSocket, kw),
     ], **opt.options.group_dict('server'))
+    app.listen(opt.options.port)
+    app_log.info('listening at localhost:%s', opt.options.port)
+
+
+def compose():
+    """Compose hardware and virtual components"""
+    volume = component.Potentiometer(17, 27)
+    # interface = luma.core.interface.serial.spi(device=0, port=0)
+    # device = luma.oled.device.ssd1351(interace)
+    device = luma.core.device.dummy()
+    display = component.Display(device)
+    display.subscribe(volume.VALUE_CHANGED, volume)
+    app = make_app(volume=volume)
+    player = component.CloudPlayer()
+    display.subscribe(player.AUTHORIZATION_PROMPT, player)
 
 
 def teardown(*_):
@@ -66,23 +81,13 @@ def teardown(*_):
     sys.exit(0)
 
 
-def compose():
-    """Compose hardware and virtual components"""
-    frequency = component.RotaryEncoder(5, 6)
-    volume = component.Potentiometer(17, 27)
-    serial = luma.core.interface.serial.spi(device=0, port=0)
-    display = component.Display(luma.oled.device.ssd1351, serial)
-
-
 def main():
     """Main application entry point"""
-    GPIO.setup()
     define_options()
     configure_httpclient()
     em = event.EventManager()
-    app = make_app()
-    app.listen(opt.options.port)
-    app_log.info('listening at localhost:%s', opt.options.port)
+    compose()
+
     ioloop = tornado.ioloop.IOLoop.current()
 
     signal.signal(signal.SIGTERM, teardown)

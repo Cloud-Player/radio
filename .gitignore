@@ -3,6 +3,7 @@
 *.pyc
 *.pyo
 *.egg-info
+*.cookie
 bin
 share
 dist

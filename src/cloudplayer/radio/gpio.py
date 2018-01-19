@@ -39,12 +39,15 @@ except ImportError:
 
 class GPIOManager(object):
 
-    def __init__(self):
-        self.gpio = None
+    @property
+    def gpio(self):
+        return self._gpio
 
-    def setup(self):
-        self.gpio.setmode(GPIO.BCM)
-        self.gpio.setwarnings(False)
+    @gpio.setter
+    def gpio(self, value):
+        self._gpio = value
+        self._gpio.setmode(GPIO.BCM)
+        self._gpio.setwarnings(False)
 
     def __getattr__(self, attr):
         return getattr(self.gpio, attr)

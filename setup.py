@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='cloudplayer.radio',
-    version='0.1.0.dev0',
+    version='0.2.0.dev0',
     author='CloudPlayer',
     author_email='hello@cloud-player.io',
     url='https://cloud-player.io/radio',
