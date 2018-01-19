@@ -109,7 +109,6 @@ class Display(Component):
 
     def __call__(self, event):
         if event.action == Potentiometer.VALUE_CHANGED:
-            self.text(event.value)
             self.text('volume {}'.format(event.value))
         elif event.action in (CloudPlayer.AUTH_START, CloudPlayer.AUTH_DONE):
             self.text(event.value)
@@ -138,10 +137,10 @@ class RotaryEncoder(Component):
                 return
             if clk_state != self.last_clk_state:
                 if dt_state == clk_state:
-                    app_log.debug('ROTATE_LEFT')
+                    app_log.info('ROTATE_LEFT')
                     self.publish(RotaryEncoder.ROTATE_LEFT)
                 else:
-                    app_log.debug('ROTATE_RIGHT')
+                    app_log.info('ROTATE_RIGHT')
                     self.publish(RotaryEncoder.ROTATE_RIGHT)
 
 
@@ -178,13 +177,17 @@ class SocketServer(Component):
         self.app.listen(opt.options.port)
 
     def on_open(self, ws_connection):
+        app_log.info('socket open')
         self.ws_connection = ws_connection
         for action, target in self.subscriptions:
-            self.subscribe(action, target)
+            super().subscribe(action, target)
+            app_log.info('sub {} {}'.format(action, target))
 
     def on_close(self):
+        app_log.info('socket close')
         for action, target in self.subscriptions:
-            self.unsubscribe(action, target)
+            super().unsubscribe(action, target)
+            app_log.info('desub {} {}'.format(action, target))
 
     def subscribe(self, action, target):
         self.subscriptions.add((action, target))
@@ -197,11 +200,13 @@ class SocketServer(Component):
             for channel, body in kw.items():
                 message = {'channel': channel, 'body': body}
                 data = tornado.escape.json_encode(message)
+                app_log.info('message was sent %s' % data)
                 self.ws_connection.write_message(data, binary=False)
         else:
             app_log.error('message was lost %s' % message)
 
     def __call__(self, event):
+        app_log.info('socket received volume %s' % event.value)
         if event.action == Potentiometer.VALUE_CHANGED:
             self.write(volume=event.value)
 
