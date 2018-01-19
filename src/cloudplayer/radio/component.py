@@ -114,7 +114,7 @@ class Display(Component):
     def __call__(self, event):
         if event.action == Potentiometer.VALUE_CHANGED:
             self.text(event.value)
-        elif event.action == CloudPlayer.AUTHORIZATION_PROMPT:
+        elif event.action in (CloudPlayer.AUTH_START, CloudPlayer.AUTH_DONE):
             self.text(event.value)
 
 
@@ -158,28 +158,50 @@ class Potentiometer(Component):
         self.publish(Potentiometer.VALUE_CHANGED, self.value)
 
 
-class WebSocket(Component, WebSocketHandler):
+class SocketServer(Component):
 
-    def __init__(self, request, application, volume=None):
-        super().__init__(request, application)
-        self.volume = volume
+    def __init__(self):
+        super().__init__()
+        self.subscriptions = set()
+        self.ws_connection = None
+        self.app = tornado.web.Application([
+            (r'^/websocket', WebSocketHandler, self.on_open, self.on_close),
+        ], **opt.options.group_dict('server'))
+        self.app.listen(opt.options.port)
 
-    def open(self):
-        self.subscribe(Potentiometer.VALUE_CHANGED, self.volume)
+    def on_open(self, ws_connection):
+        self.ws_connection = ws_connection
+        for action, target in self.subscriptions:
+            self.subscribe(action, target)
 
     def on_close(self):
-        self.unsubscribe(Potentiometer.VALUE_CHANGED, self.volume)
+        for action, target in self.subscriptions:
+            self.unsubscribe(action, target)
+
+    def subscribe(self, action, target):
+        self.subscriptions.add((action, target))
+
+    def unsubscribe(self, action, target):
+        self.subscriptions.discard((action, target))
+
+    def write(self, **kw):
+        if self.ws_connection:
+            for channel, body in kw.items():
+                message = {'channel': channel, 'body': body}
+                data = tornado.escape.json_encode(message)
+                self.ws_connection.write_message(data, binary=False)
+        else:
+            app_log.error('message was lost %s' % message)
 
     def __call__(self, event):
         if event.action == Potentiometer.VALUE_CHANGED:
-            self.write_message(volume=event.value)
-        elif event.action == CloudPlayer.AUTHORIZATION_PROMPT:
-            self.write_message(volume=event.value)
+            self.write(volume=event.value)
 
 
 class CloudPlayer(Component):
 
-    AUTHORIZATION_PROMPT = 'AUTHORIZATION_PROMPT'
+    AUTH_START = 'AUTH_START'
+    AUTH_DONE = 'AUTH_DONE'
 
     def __init__(self):
         super().__init__()
@@ -231,7 +253,7 @@ class CloudPlayer(Component):
         self.token_callback = tornado.ioloop.PeriodicCallback(
             self.check_token, 1 * 1000)
         self.token_callback.start()
-        self.publish(self.AUTHORIZATION_PROMPT, 'enter\n%s' % self.token['id'])
+        self.publish(self.AUTH_START, 'enter\n%s' % self.token['id'])
         app_log.info('create %s' % self.token)
 
     @tornado.gen.coroutine
@@ -254,4 +276,4 @@ class CloudPlayer(Component):
             if account['provider_id'] == 'cloudplayer':
                 if account['title']:
                     title = account['title']
-        self.publish(self.AUTHORIZATION_PROMPT, 'hello\n{}'.format(title))
+        self.publish(self.AUTH_DONE, 'hello\n{}'.format(title))

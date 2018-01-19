@@ -49,27 +49,21 @@ def configure_httpclient():
         tornado.httpclient.AsyncHTTPClient.configure(None, defaults=defaults)
 
 
-def make_app(**kw):
-    """Configure routes and application options"""
-    # TODO: Make the app a component as well
-    app = tornado.web.Application([
-        (r'^/websocket', component.WebSocket, kw),
-    ], **opt.options.group_dict('server'))
-    app.listen(opt.options.port)
-    app_log.info('listening at localhost:%s', opt.options.port)
-
-
 def compose():
     """Compose hardware and virtual components"""
-    # volume = component.Potentiometer(17, 27)
-    interface = luma.core.interface.serial.spi(device=0, port=0)
-    device = luma.oled.device.ssd1351(interface)
-    # device = luma.core.device.dummy()
-    display = component.Display(device)
-    # display.subscribe(volume.VALUE_CHANGED, volume)
-    app = make_app(volume=None)
+    try:
+        interface = luma.core.interface.serial.spi(device=0, port=0)
+        device = luma.oled.device.ssd1351(interface)
+    except:
+        device = luma.core.device.dummy()
+    finally:
+        display = component.Display(device)
+
+    volume = component.Potentiometer(17, 27)
+    display.subscribe(volume.VALUE_CHANGED, volume)
+    server = component.SocketServer()
     player = component.CloudPlayer()
-    display.subscribe(player.AUTHORIZATION_PROMPT, player)
+    display.subscribe(player.AUTH_START, player)
 
 
 def teardown(*_):

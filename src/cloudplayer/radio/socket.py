@@ -13,6 +13,11 @@ import tornado.options as opt
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
+    def __init__(self, request, application, on_open=None, on_close=None):
+        super().__init__(request, application)
+        self.on_open = on_open
+        self.on_close = on_close
+
     def set_default_headers(self):
         headers = [
             ('Access-Control-Allow-Credentials', 'true'),
@@ -28,12 +33,15 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         for header, value in headers:
             self.set_header(header, value)
 
-    def write_message(self, **kw):
-        super().write_message(json.dumps(kw))
+    def open(self):
+        self.on_open(self.ws_connection)
+
+    def on_close(self):
+        self.on_close()
 
     @tornado.gen.coroutine
     def options(self, *_, **__):
         self.finish()
 
-    def check_origin(self, *_):
-        return True
+    def check_origin(self, origin):
+        return origin == opt.options['allowed_origin']
