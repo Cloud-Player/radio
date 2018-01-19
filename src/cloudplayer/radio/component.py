@@ -229,7 +229,7 @@ class CloudPlayer(Component):
 
         self.token = tornado.escape.json_decode(response.body)
         self.token_callback = tornado.ioloop.PeriodicCallback(
-            self.check_token, 5 * 1000)
+            self.check_token, 1 * 1000)
         self.token_callback.start()
         self.publish(self.AUTHORIZATION_PROMPT, 'enter\n%s' % self.token['id'])
         app_log.info('create %s' % self.token)
@@ -241,5 +241,17 @@ class CloudPlayer(Component):
         if self.token['claimed']:
             self.token_callback.stop()
             self.login_callback.stop()
-            self.publish(self.AUTHORIZATION_PROMPT, 'auth done')
-        app_log.info('check %s' % self.token)
+            yield self.say_hello()
+        else:
+            app_log.info('check %s' % self.token)
+
+    @tornado.gen.coroutine
+    def say_hello(self):
+        response = yield self.fetch('/user/me')
+        user = tornado.escape.json_decode(response.body)
+        title = 'you'
+        for account in user['accounts']:
+            if account['provider_id'] == 'cloudplayer':
+                if account['title']:
+                    title = account['title']
+        self.publish(self.AUTHORIZATION_PROMPT, 'hello\n{}'.format(title))
