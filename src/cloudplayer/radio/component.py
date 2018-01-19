@@ -58,23 +58,19 @@ class Channel(Component):
 
 class Input(Channel):
 
-    RISING = 'RISING'
-    FALLING = 'FALLING'
+    VALUE_CHANGED = 'VALUE_CHANGED'
 
     def __init__(self, channel):
         super().__init__(channel, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        GPIO.add_event_detect(
-            channel,
-            GPIO.RISING,
-            callback=functools.partial(self.publish, self, Input.RISING))
-        GPIO.add_event_detect(
-            channel,
-            GPIO.FALLING,
-            callback=functools.partial(self.publish, self, Input.FALLING))
+        GPIO.add_event_detect(channel, GPIO.BOTH, self.callback)
 
     def __del__(self):
         GPIO.remove_event_detect(self.channel)
         super(Input, self).__del__()
+
+    def callback(self, channel):
+        if self.channel == channel:
+            self.publish(self.VALUE_CHANGED, self.get())
 
 
 class Output(Channel):
@@ -114,6 +110,7 @@ class Display(Component):
     def __call__(self, event):
         if event.action == Potentiometer.VALUE_CHANGED:
             self.text(event.value)
+            self.text('volume {}'.format(event.value))
         elif event.action in (CloudPlayer.AUTH_START, CloudPlayer.AUTH_DONE):
             self.text(event.value)
 
@@ -122,20 +119,30 @@ class RotaryEncoder(Component):
 
     ROTATE_LEFT = 'ROTATE_LEFT'
     ROTATE_RIGHT = 'ROTATE_RIGHT'
-    PUSH_BUTTON = 'PUSH_BUTTON'
 
     def __init__(self, clk, dt):
         super().__init__()
         self.clk = Input(clk)
         self.dt = Input(dt)
-        self.subscribe(Input.RISING, self.clk)
-        self.subscribe(Input.FALLING, self.clk)
+        self.subscribe(Input.VALUE_CHANGED, self.clk)
+        self.subscribe(Input.VALUE_CHANGED, self.dt)
+        self.last_clk_state = self.clk.get()
 
     def __call__(self, event):
-        if (event.action == Input.RISING) == self.dt.get():
-            self.publish(RotaryEncoder.ROTATE_LEFT)
-        else:
-            self.publish(RotaryEncoder.ROTATE_RIGHT)
+        if event.action == Input.VALUE_CHANGED:
+            if event.source is self.clk:
+                clk_state, dt_state = event.value, self.dt.get()
+            elif event.source is self.dt:
+                clk_state, dt_state = self.clk.get(), event.value
+            else:
+                return
+            if clk_state != self.last_clk_state:
+                if dt_state == clk_state:
+                    app_log.debug('ROTATE_LEFT')
+                    self.publish(RotaryEncoder.ROTATE_LEFT)
+                else:
+                    app_log.debug('ROTATE_RIGHT')
+                    self.publish(RotaryEncoder.ROTATE_RIGHT)
 
 
 class Potentiometer(Component):
@@ -155,7 +162,7 @@ class Potentiometer(Component):
             self.value = min(self.value + self.step, 1.0)
         else:
             self.value = max(self.value - self.step, 0.0)
-        self.publish(Potentiometer.VALUE_CHANGED, self.value)
+        self.publish(Potentiometer.VALUE_CHANGED, int(self.value * 100))
 
 
 class SocketServer(Component):
@@ -165,7 +172,8 @@ class SocketServer(Component):
         self.subscriptions = set()
         self.ws_connection = None
         self.app = tornado.web.Application([
-            (r'^/websocket', WebSocketHandler, self.on_open, self.on_close),
+            (r'^/websocket', WebSocketHandler,
+             {'on_open': self.on_open, 'on_close': self.on_close}),
         ], **opt.options.group_dict('server'))
         self.app.listen(opt.options.port)
 

@@ -62,6 +62,7 @@ def compose():
     volume = component.Potentiometer(17, 27)
     display.subscribe(volume.VALUE_CHANGED, volume)
     server = component.SocketServer()
+    server.subscribe(volume.VALUE_CHANGED, volume)
     player = component.CloudPlayer()
     display.subscribe(player.AUTH_START, player)
 
