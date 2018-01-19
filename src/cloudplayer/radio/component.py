@@ -92,11 +92,11 @@ class Output(Channel):
 class Display(Component):
 
     light_font = ImageFont.truetype(
-        'src/cloudplayer/radio/font/RobotoMono-Light.ttf', 22, 0, 'unic')
+        'src/cloudplayer/radio/font/RobotoMono-Light.ttf', 20, 0, 'unic')
     regular_font = ImageFont.truetype(
-        'src/cloudplayer/radio/font/RobotoMono-Regular.ttf', 22, 0, 'unic')
+        'src/cloudplayer/radio/font/RobotoMono-Regular.ttf', 20, 0, 'unic')
     bold_font = ImageFont.truetype(
-        'src/cloudplayer/radio/font/RobotoMono-Bold.ttf', 22, 0, 'unic')
+        'src/cloudplayer/radio/font/RobotoMono-Bold.ttf', 20, 0, 'unic')
 
     def __init__(self, device):
         super().__init__()
@@ -109,7 +109,7 @@ class Display(Component):
 
     def text(self, text):
         with luma.core.render.canvas(self.device) as draw:
-            draw.text((30, 40), text, fill='white', font=self.regular_font)
+            draw.text((20, 20), text, fill='white', font=self.regular_font)
 
     def __call__(self, event):
         if event.action == Potentiometer.VALUE_CHANGED:
