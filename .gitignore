@@ -1,5 +1,6 @@
 .cache
 .eggs
+.idea
 *.pyc
 *.pyo
 *.egg-info
@@ -11,3 +12,4 @@ include
 lib
 pip-selfcheck.json
 pyvenv.cfg
+package-lock.json
