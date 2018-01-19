@@ -30,7 +30,7 @@ class EventManager(tornado.ioloop.PeriodicCallback):
     subscriptions = collections.defaultdict(set)
     queue = tornado.queues.Queue(maxsize=1024)
 
-    def __init__(self, callback_time=250):
+    def __init__(self, callback_time=150):
         super().__init__(self.process, callback_time)
 
     @classmethod
