@@ -2,20 +2,25 @@ dist: trusty
 sudo: false
 language: python
 python:
-  - "3.6"
+  - "3.5"
 env:
   global:
   - GH_REF=github.com/Cloud-Player/radio
   - secure: "ad0tXuwdyAgQzRhDk4PxMoxujYSRr1V7c/cO8md20ukY4BglqAvLFZ+HngTLJLo4/QkoZs6HG0GLGW0xd/PiHDoocgfdn6BurlQbrAhgBKpy0eRvcDjbeMqE9UVPQUJdCpC4uutCqfTDVVKqkiA6+sMOPSF6R3oxEY826WxQqoISp5EUp4LoDrUVRDP6sgaRhbp5Qvpo4ZRKdJjZZjK/AV35R6TRgh3UEuAhip8v/EflqydtR7VuAVzpHiBnn2x8fJyjBFEK4317G2imS+OjrC3HKOQPe0MdEbHyaYiKVs69aFmq3j6PfktJ88F8OV/G+zzdwxOqKqmMhMBlkGWxWPfIPMbqO21IsyF5haAz6cgdsAwCerE7DJVdiJMdoN2K0yVyblMvO4zn9m4XJvz+fP4nzfE1pnf0ALZ9pgLAo7ae3L9UDyHWnbJ98tgqpew+YLyYE9O4i8Ljh9fFojJR5fVc6VO+jz0sGbqYPHwwytwt1yLGmULLrrelaM+rcFsnrmDDb6VT0LQG8xaxj2pU2B1qaz/pBqFcL/S96IDIokfvBIjm3iZEOLHPIXuxNIoXS1xj+Pxx73PdxysxJPIkMmL+Jik7fu0XCBrfw2S5tS4ybur5wxt1cZcumNlNbLlwksmdq34YYNZKlaGwPt5RyEo4bbWxmBr+1GWdYMrr10E="
+before_install:
+  - sudo apt-get update -q
+  - sudo apt-get install nodejs npm -qy
 install:
   - pip install -e .
-  - sudo apt-get install nodejs
+  - pip install -e .[test]
+  - npm install src/web
+script:
+  - pytest
+  - codecov -cF engine
+  - npm test
+  - codecov -cF web
 before_deploy:
-- cd src/web
-- npm install
-- npm run release
-- cd ../..
-script: echo yo
+  - npm run release
 deploy:
   - provider: script
     script: ./release-scripts/release_on_github_pages.sh
