@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/Cloud-Player/radio.svg?branch=master)](https://travis-ci.org/Cloud-Player/radio)
+[![Code Coverage](https://codecov.io/gh/Cloud-Player/radio/branch/master/graph/badge.svg)](https://codecov.io/gh/Cloud-Player/radio)
 
 # cloud-player radio
 
