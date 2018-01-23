@@ -17,9 +17,8 @@ setup(
     namespace_packages=['cloudplayer'],
     setup_requires=['setuptools_git'],
     install_requires=[
-        'RPi.GPIO' if (
-            'raspberrypi' in os.uname()
-        ) else 'mock',
+        'mock',
+        'RPi.GPIO',
         'tornado',
         'luma.oled',
         'setuptools'

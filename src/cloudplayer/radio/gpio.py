@@ -7,7 +7,7 @@
 """
 try:
     import RPi.GPIO as rpi_gpio
-except ImportError:
+except (ImportError, RuntimeError):
     import mock
 
     class MockGPIO(mock.MagicMock):
