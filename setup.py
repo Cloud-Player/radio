@@ -25,6 +25,7 @@ setup(
     ],
     extras_require={
         'test': [
+            'codecov',
             'mock',
             'pylint',
             'pytest-pep8',
