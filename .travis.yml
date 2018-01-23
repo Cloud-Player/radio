@@ -23,6 +23,7 @@ script:
   - npm test
   - codecov -F javascript
   - cd ../..
+  - git clean -fx
 before_deploy:
   - cd src/web
   - npm run release
