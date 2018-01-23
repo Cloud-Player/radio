@@ -28,8 +28,11 @@ setup(
             'codecov',
             'mock',
             'pylint',
+            'pytest-cov',
             'pytest-pep8',
+            'pytest-remove-stale-bytecode',
             'pytest-timeout',
+            'pytest-tornado',
             'pytest'
         ]
     },

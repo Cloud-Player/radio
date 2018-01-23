@@ -18,10 +18,10 @@ install:
   - cd ../..
 script:
   - pytest
-  - codecov -cF python
+  - codecov -F python
   - cd src/web
   - npm test
-  - codecov -cF javascript
+  - codecov -F javascript
   - cd ../..
 before_deploy:
   - cd src/web
