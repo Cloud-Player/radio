@@ -13,14 +13,20 @@ before_install:
 install:
   - pip install -e .
   - pip install -e .[test]
-  - npm install src/web
+  - cd src/web
+  - npm install
+  - cd ../..
 script:
   - pytest
-  - codecov -cF engine
+  - codecov -cF python
+  - cd src/web
   - npm test
-  - codecov -cF web
+  - codecov -cF javascript
+  - cd ../..
 before_deploy:
+  - cd src/web
   - npm run release
+  - cd ../..
 deploy:
   - provider: script
     script: ./release-scripts/release_on_github_pages.sh
