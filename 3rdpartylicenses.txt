@@ -156,7 +156,7 @@ externally maintained libraries used by this software which have their
 own licenses; we recommend you read them, as their terms may differ from
 the terms above.
 
-@angular/core@5.2.1
+@angular/core@5.2.2
 MIT
 MIT
 
