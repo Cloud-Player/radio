@@ -3,6 +3,10 @@
 
 # cloud-player radio
 
+## wire up
+
+![fritzing](https://raw.githubusercontent.com/Cloud-Player/radio/master/schematic.jpg)
+
 ## setup
 - download raspbian lite
 ```
