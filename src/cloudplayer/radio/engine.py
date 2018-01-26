@@ -65,6 +65,7 @@ def compose():
     server.subscribe(volume.VALUE_CHANGED, volume)
     player = component.CloudPlayer()
     display.subscribe(player.AUTH_START, player)
+    display.subscribe(player.AUTH_DONE, player)
 
 
 def teardown(*_):
