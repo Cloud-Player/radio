@@ -136,11 +136,10 @@ class RotaryEncoder(Component):
             else:
                 return
             if clk_state != self.last_clk_state:
+                self.last_clk_state = clk_state
                 if dt_state == clk_state:
-                    app_log.info('ROTATE_LEFT')
                     self.publish(RotaryEncoder.ROTATE_LEFT)
                 else:
-                    app_log.info('ROTATE_RIGHT')
                     self.publish(RotaryEncoder.ROTATE_RIGHT)
 
 
