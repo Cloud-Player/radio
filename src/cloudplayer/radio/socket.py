@@ -23,7 +23,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             ('Access-Control-Allow-Credentials', 'true'),
             ('Access-Control-Allow-Headers', 'Accept, Content-Type, Origin'),
             ('Access-Control-Allow-Methods', 'GET, OPTIONS'),
-            ('Access-Control-Allow-Origin', opt.options['allowed_origin']),
+            ('Access-Control-Allow-Origin', self.allowed_origin),
             ('Access-Control-Max-Age', '600'),
             ('Content-Language', 'en-US'),
             ('Content-Type', 'application/json'),
@@ -39,9 +39,16 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
     def on_close(self):
         self.on_close()
 
+    def check_origin(self, origin):
+        return origin in opt.options['allowed_origins']
+
+    @property
+    def allowed_origin(self):
+        proposed_origin = self.request.headers.get('Origin')
+        if proposed_origin in opt.options['allowed_origins']:
+            return proposed_origin
+        return opt.options['allowed_origins'][0]
+
     @tornado.gen.coroutine
     def options(self, *_, **__):
         self.finish()
-
-    def check_origin(self, origin):
-        return origin == opt.options['allowed_origin']
