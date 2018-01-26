@@ -198,7 +198,7 @@ class SocketServer(Component):
     def write(self, **kw):
         if self.ws_connection:
             for channel, body in kw.items():
-                message = {'channel': channel, 'body': body}
+                message = {'channel': channel, 'body': body, 'method': 'PUT'}
                 data = tornado.escape.json_encode(message)
                 app_log.info('message was sent %s' % data)
                 self.ws_connection.write_message(data, binary=False)
