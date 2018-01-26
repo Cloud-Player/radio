@@ -59,10 +59,15 @@ def compose():
     finally:
         display = component.Display(device)
 
-    volume = component.Potentiometer(17, 27)
+    volume = component.Potentiometer(5, 6)
+    frequency = component.RotaryEncoder(17, 27)
     display.subscribe(volume.VALUE_CHANGED, volume)
+    display.subscribe(frequency.ROTATE_LEFT, frequency)
+    display.subscribe(frequency.ROTATE_RIGHT, frequency)
     server = component.SocketServer()
     server.subscribe(volume.VALUE_CHANGED, volume)
+    server.subscribe(frequency.ROTATE_LEFT, frequency)
+    server.subscribe(frequency.ROTATE_RIGHT, frequency)
     player = component.CloudPlayer()
     display.subscribe(player.AUTH_START, player)
     display.subscribe(player.AUTH_DONE, player)

@@ -6,13 +6,16 @@
     :license: Apache-2.0, see LICENSE for details
 """
 import functools
+import struct
+import random
 import uuid
 
-from PIL import ImageFont
+from PIL import ImageFont, Image
 from tornado.log import app_log
 import luma.core.render
 import tornado.escape
 import tornado.gen
+import tornado.httpclient
 import tornado.httpclient
 import tornado.ioloop
 import tornado.options as opt
@@ -97,21 +100,45 @@ class Display(Component):
     def __init__(self, device):
         super().__init__()
         self.device = device
+        self.buffer = None
 
-    def preprocess(self, image):
-        draft = image.draft(self.device.mode, self.device.size)
-        # TODO: Ensure correct cropping and PNG support (draft dont do it)
-        return draft
+    def draw(self, image):
+        width, height = image.size
+        min_edge = float(min(width, height))
+        pad_left = (width - min_edge) / 2.0
+        pad_top = (height - min_edge) / 2.0
+        pad_right = width - pad_left
+        pad_bottom = height - pad_top
+        cropped = image.crop((pad_left, pad_top, pad_right, pad_bottom))
+        sized = cropped.resize((self.device.width, self.device.height))
+        self.buffer = sized.copy()
+        self.device.draw(sized)
 
     def text(self, text):
         with luma.core.render.canvas(self.device) as draw:
-            draw.text((20, 20), text, fill='white', font=self.regular_font)
+            draw.multiline_text(
+                (0, 0), text,
+                fill='white', align='center', font=self.regular_font)
 
     def __call__(self, event):
         if event.action == Potentiometer.VALUE_CHANGED:
             self.text('volume {}'.format(event.value))
-        elif event.action in (CloudPlayer.AUTH_START, CloudPlayer.AUTH_DONE):
+        elif event.action in (
+                RotaryEncoder.ROTATE_LEFT, RotaryEncoder.ROTATE_RIGHT):
+            data = [random.randint(0, 0xFFFFFF)
+                    for _ in range(self.device.width * self.device.height)]
+            packed = struct.pack('i' * len(data), *data)
+            image = Image.frombytes('RGBA', device.size, packed)
+            self.draw(image)
+        elif event.action == CloudPlayer.AUTH_START:
             self.text(event.value)
+        elif event.action in CloudPlayer.AUTH_DONE:
+            http_client = tornado.httpclient.HTTPClient()
+            response = http_client.fetch(
+                'https://i1.sndcdn.com/'
+                'artworks-000097449926-o475y8-t300x300.jpg')
+            image = Image.open(response.buffer)
+            self.draw(image)
 
 
 class RotaryEncoder(Component):
@@ -208,7 +235,10 @@ class SocketServer(Component):
         app_log.info('socket received volume %s' % event.value)
         if event.action == Potentiometer.VALUE_CHANGED:
             self.write(volume=event.value)
-
+        elif event.action == RotaryEncoder.ROTATE_LEFT:
+            self.write(frequency=1)
+        elif event.action == RotaryEncoder.ROTATE_RIGHT:
+            self.write(frequency=-1)
 
 class CloudPlayer(Component):
 
