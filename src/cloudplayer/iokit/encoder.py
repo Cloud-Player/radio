@@ -22,19 +22,19 @@ class RotaryEncoder(Component):
         self.dt.subscribe(Input.VALUE_CHANGED, self.dt_changed)
         self.last_clk_state = self.clk.get()
 
-        def clk_changed(self, event):
-            self.rotate(event.value, self.dt.get())
+    def clk_changed(self, event):
+        self.rotate(event.value, self.dt.get())
 
-        def dt_changed(self, event):
-            self.rotate(self.clk.get(), event.value)
+    def dt_changed(self, event):
+        self.rotate(self.clk.get(), event.value)
 
-        def rotate(self, clk_state, dt_state):
-            if clk_state != self.last_clk_state:
-                self.last_clk_state = clk_state
-                if dt_state == clk_state:
-                    self.publish(RotaryEncoder.ROTATE_LEFT)
-                else:
-                    self.publish(RotaryEncoder.ROTATE_RIGHT)
+    def rotate(self, clk_state, dt_state):
+        if clk_state != self.last_clk_state:
+            self.last_clk_state = clk_state
+            if dt_state == clk_state:
+                self.publish(RotaryEncoder.ROTATE_LEFT)
+            else:
+                self.publish(RotaryEncoder.ROTATE_RIGHT)
 
 
 class Potentiometer(Component):
