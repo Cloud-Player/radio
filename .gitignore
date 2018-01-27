@@ -4,6 +4,8 @@
 *.pyc
 *.pyo
 *.egg-info
+*.cookie
+.coverage
 bin
 share
 dist

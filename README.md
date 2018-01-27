@@ -1,6 +1,11 @@
 [![Build Status](https://travis-ci.org/Cloud-Player/radio.svg?branch=master)](https://travis-ci.org/Cloud-Player/radio)
+[![Code Coverage](https://codecov.io/gh/Cloud-Player/radio/branch/master/graph/badge.svg)](https://codecov.io/gh/Cloud-Player/radio)
 
 # cloud-player radio
+
+## wire up
+
+![fritzing](https://raw.githubusercontent.com/Cloud-Player/radio/master/schematic.jpg)
 
 ## setup
 - download raspbian lite
@@ -74,7 +79,7 @@ https://www.hifiberry.com/build/documentation/configuring-linux-3-18-x
 
 https://support.hifiberry.com/hc/en-us/articles/205377202-Adding-software-volume-control
 
-## radio engine
+## cloudplayer radio
 
 ### install
 ```
