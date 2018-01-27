@@ -59,6 +59,9 @@ class Handler(tornado.websocket.WebSocketHandler):
 
 class Server(Component):
 
+    SOCKET_OPENED = 'SOCKET_OPENED'
+    SOCKET_CLOSED = 'SOCKET_CLOSED'
+
     def __init__(self):
         super().__init__()
         self.subscriptions = set()
@@ -75,12 +78,14 @@ class Server(Component):
         for action, subscriber in self.subscriptions:
             super().subscribe(action, subscriber)
             app_log.info('sub {} {}'.format(action, subscriber))
+        self.publish(self.SOCKET_OPENED)
 
     def on_close(self):
         app_log.info('socket close')
         for action, target in self.subscriptions:
             super().unsubscribe(action, target)
             app_log.info('unsub {} {}'.format(action, target))
+        self.publish(self.SOCKET_CLOSED)
 
     def subscribe(self, action, subscriber):
         """Deferred subscribe method"""

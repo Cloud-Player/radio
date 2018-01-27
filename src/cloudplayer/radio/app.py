@@ -60,8 +60,9 @@ def compose():
         display = Display(device)
 
     server = Server()
-
     player = Player()
+
+    server.subscribe(server.SOCKET_OPENED, player.skip)
     player.subscribe(player.AUTH_START, display.show_token)
     player.subscribe(player.AUTH_DONE, display.say_hello)
     player.subscribe(player.CTRL_NEXT, server.update_queue)
@@ -74,7 +75,7 @@ def compose():
 
     frequency = Potentiometer(27, 17)
     frequency.subscribe(frequency.VALUE_CHANGED, display.pixelate)
-    frequency.subscribe(frequency.VALUE_CHANGED, player.tuning)
+    frequency.subscribe(frequency.VALUE_CHANGED, player.tune)
     frequency.subscribe(frequency.VALUE_CHANGED, server.update_noise)
 
     skip = Input(26)
