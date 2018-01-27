@@ -59,15 +59,22 @@ def compose():
     finally:
         display = component.Display(device)
 
+    server = component.SocketServer()
+
     volume = component.Potentiometer(5, 6)
-    frequency = component.RotaryEncoder(17, 27)
     display.subscribe(volume.VALUE_CHANGED, volume)
+    server.subscribe(volume.VALUE_CHANGED, volume)
+
+    mute = component.Input(13)
+
+    frequency = component.RotaryEncoder(27, 17)
     display.subscribe(frequency.ROTATE_LEFT, frequency)
     display.subscribe(frequency.ROTATE_RIGHT, frequency)
-    server = component.SocketServer()
-    server.subscribe(volume.VALUE_CHANGED, volume)
     server.subscribe(frequency.ROTATE_LEFT, frequency)
     server.subscribe(frequency.ROTATE_RIGHT, frequency)
+
+    skip = component.Input(26)
+
     player = component.CloudPlayer()
     display.subscribe(player.AUTH_START, player)
     display.subscribe(player.AUTH_DONE, player)
