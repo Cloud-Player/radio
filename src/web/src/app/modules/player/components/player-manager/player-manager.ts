@@ -1,5 +1,7 @@
 import {
-  Component, ComponentFactoryResolver, ComponentRef, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild,
+  Component, ComponentFactoryResolver, ComponentRef, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output,
+  SimpleChanges,
+  ViewChild,
   ViewContainerRef
 } from '@angular/core';
 import {SoundcloudPlayerComponent} from '../soundcloud-player/soundcloud-player';
@@ -26,7 +28,7 @@ import {ITrack} from '../../../api/tracks/track.interface';
     YoutubePlayerComponent
   ]
 })
-export class PlayerManagerComponent implements OnInit {
+export class PlayerManagerComponent implements OnInit, OnChanges {
   private _fadeDuration = 10;
   private _prepareTime = 30;
   private _volume = 1;
@@ -43,6 +45,9 @@ export class PlayerManagerComponent implements OnInit {
 
   @Input()
   public playQueue: PlayQueue<PlayQueueItem>;
+
+  @Input()
+  public volume: number;
 
   @Output()
   public playerStatusChange: EventEmitter<PlayerStatus> = new EventEmitter();
@@ -349,5 +354,17 @@ export class PlayerManagerComponent implements OnInit {
     this.fullScreenService.getObservable()
       .filter(eventType => eventType === FullScreenEventType.Leave)
       .subscribe(this.leftFullScreen.bind(this));
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.volume) {
+      this._volume = changes.volume.currentValue / 100;
+      if (this._activePlayer) {
+        this._activePlayer.instance.setVolume(this._volume);
+      }
+      if (this._upcomingPlayer) {
+        this._upcomingPlayer.instance.setVolume(this._volume);
+      }
+    }
   }
 }
