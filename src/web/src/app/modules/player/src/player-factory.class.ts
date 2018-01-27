@@ -1,4 +1,11 @@
-import {ComponentFactory, ComponentFactoryResolver, ComponentRef, Injectable, Type, ViewContainerRef} from '@angular/core';
+import {
+  ComponentFactory,
+  ComponentFactoryResolver,
+  ComponentRef,
+  Injectable,
+  Type,
+  ViewContainerRef
+} from '@angular/core';
 import {IPlayer, IPlayerSize} from './player.interface';
 import {SoundcloudPlayerComponent} from '../components/soundcloud-player/soundcloud-player';
 import {PlayerStatus} from './player-status.enum';
@@ -107,13 +114,15 @@ export class PlayerFactory {
     if (reusablePlayer) {
       const reusablePlayerComponent = reusablePlayer.component;
 
-      if (reusablePlayerComponent.instance.track.id === item.track.id) {
+      if (reusablePlayerComponent.instance.track.id === item.track.id &&
+        reusablePlayerComponent.instance.getStatus() === PlayerStatus.Playing) {
         return reusablePlayer.component;
       }
 
       if (reusablePlayerComponent.instance.getStatus() === PlayerStatus.NotInitialised) {
         reusablePlayerComponent.instance.initialise({size: playerSize});
       }
+
       reusablePlayerComponent.instance.updateTrack(item.track);
       reusablePlayerComponent.instance.preload(item.progress);
       return reusablePlayerComponent;
