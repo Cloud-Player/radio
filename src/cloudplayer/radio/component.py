@@ -112,7 +112,7 @@ class Display(Component):
         cropped = image.crop((pad_left, pad_top, pad_right, pad_bottom))
         sized = cropped.resize((self.device.width, self.device.height))
         self.buffer = sized.copy()
-        self.device.draw(sized)
+        self.device.display(sized)
 
     def text(self, text):
         with luma.core.render.canvas(self.device) as draw:
@@ -125,10 +125,14 @@ class Display(Component):
             self.text('volume {}'.format(event.value))
         elif event.action in (
                 RotaryEncoder.ROTATE_LEFT, RotaryEncoder.ROTATE_RIGHT):
-            data = [random.randint(0, 0xFFFFFF)
-                    for _ in range(self.device.width * self.device.height)]
-            packed = struct.pack('i' * len(data), *data)
-            image = Image.frombytes('RGBA', device.size, packed)
+            width = int(self.device.width / 4)
+            height = int(self.device.height / 4)
+            image = self.buffer.copy()
+            for _ in range(20):
+                sx, tx = random.sample(range(self.device.width - 4), 2)
+                sy, ty = random.sample(range(self.device.height - 4), 2)
+                color = self.buffer.getpixel((sx, sy))
+                image.paste(color, (tx, ty, tx + 4, ty + 4))
             self.draw(image)
         elif event.action == CloudPlayer.AUTH_START:
             self.text(event.value)
