@@ -12,6 +12,9 @@ import {EaseService} from './services/ease.service';
 import {FullScreenService} from './services/fullscreen.service';
 import {TrackCoverComponent} from './components/track-cover/track-cover.component';
 import {CloudPlayerLogoComponent} from './components/cloud-player-logo/cloud-player-logo.component';
+import {MessageService} from './services/message.service';
+import {SocketMessagesService} from './services/socket-messages.service';
+import {WindowMessagesService} from './services/window-messages.service';
 
 @NgModule({
   imports: [
@@ -38,7 +41,10 @@ import {CloudPlayerLogoComponent} from './components/cloud-player-logo/cloud-pla
   providers: [
     HumanReadableSecondsPipe,
     CloudPlayerLogoService,
-    FullScreenService
+    FullScreenService,
+    MessageService,
+    SocketMessagesService,
+    WindowMessagesService
   ]
 })
 export class SharedModule {

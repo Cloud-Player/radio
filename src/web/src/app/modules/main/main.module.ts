@@ -9,6 +9,7 @@ import {SharedModule} from '../shared/shared.module';
 import {PlayerModule} from '../player/player.module';
 import {UserAnalyticsModule} from '../user-analytics/user-analytics.module';
 import {MainRoutingModule} from './main.routes';
+import {SocketMockControlsComponent} from './components/socket-mock-controls/socket-mock-controls';
 
 @NgModule({
   imports: [
@@ -21,7 +22,8 @@ import {MainRoutingModule} from './main.routes';
     MainRoutingModule
   ],
   declarations: [
-    MainComponent
+    MainComponent,
+    SocketMockControlsComponent
   ],
   providers: [{provide: LocationStrategy, useClass: HashLocationStrategy}],
   bootstrap: [MainComponent]
