@@ -20,8 +20,6 @@ script:
   - pytest
   - codecov -F python
   - cd src/web
-  - npm test
-  - codecov -F javascript
   - cd ../..
   - git clean -fx
 before_deploy:

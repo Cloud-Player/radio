@@ -1,1 +1,13 @@
-<app-player-manager [playQueue]="playQueue"></app-player-manager>
+<div>
+  <app-player-manager [playQueue]="playQueue" [volume]="playerVolume" [hidden]="!showPlayer"></app-player-manager>
+  <app-player-manager [playQueue]="noiseQueue" [volume]="noiseVolume" style="display: none"></app-player-manager>
+</div>
+<hr>
+<div>
+  <label>
+    Show Player
+    <input type="checkbox" [(ngModel)]="showPlayer">
+  </label>
+</div>
+<hr>
+<app-socket-mock-controls [playQueue]="playQueue" [volume]="volume" [isLoading]="isLoading"></app-socket-mock-controls>

@@ -33,6 +33,20 @@ export class PlayQueueItem extends BaseModel {
   @defaultValue(0)
   duration: number;
 
+  parse(attributes) {
+    if (attributes.track_id) {
+      return {
+        id: attributes.track_id,
+        track: {
+          id: attributes.track_id,
+          provider: attributes.track_provider_id
+        }
+      };
+    } else {
+      return attributes;
+    }
+  }
+
   private resolveOnStatus(requestedStatus): Promise<any> {
     if (!this._promisePerState[requestedStatus]) {
       this._promisePerState[requestedStatus] = new Promise(resolve => {

@@ -1,0 +1,40 @@
+<textarea [(ngModel)]="queue" rows="10" cols="100" style="width: 100%"></textarea>
+<br>
+<button (click)="setQueue()">Set Queue</button>
+<hr>
+<button *ngIf="!playQueue.getPlayingItem()"
+        [disabled]="playQueue.length===0"
+        (click)="play()">Play</button>
+<button *ngIf="playQueue.getPlayingItem()"
+        (click)="pause()">Pause</button>
+<button [disabled]="!playQueue.hasNextItem()"
+        (click)="next()">Next</button>
+<button [disabled]="!playQueue.hasPreviousItem()"
+        (click)="previous()">Previous</button>
+<b *ngIf="isLoading">Is loading...</b>
+<hr>
+<label>
+  Volume:
+  <input type="range" [(ngModel)]="volume" (ngModelChange)="setVolume(volume)">
+</label>
+<hr>
+<label>
+  Noise:
+  <input type="range" [(ngModel)]="noise" (ngModelChange)="setNoise(noise)" [min]="0" [max]="100">
+</label>
+<hr>
+<h4>Playqueue</h4>
+<ul *ngIf="playQueue.length>0">
+  <li *ngFor="let item of playQueue.models">
+    <span *ngIf="item.isPlaying()">▶</span>
+    {{item.track.id}}
+    <span *ngIf="item.track.title">
+      - {{item.track.title}}
+    </span>
+    - {{item.track.provider}}
+    <span *ngIf="item.duration && item.progress">{{item.progress/item.duration}}%</span>
+  </li>
+</ul>
+<div *ngIf="playQueue.length===0">
+  No items are in the playqueue
+</div>

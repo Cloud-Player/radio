@@ -299,6 +299,11 @@ export abstract class AbstractPlayer implements OnInit {
           this._initialiseCallbacks = [];
           this.setStatus(PlayerStatus.Initialised);
           this._initialised = true;
+
+          if (!this.track.title) {
+            this.track.fetch();
+          }
+
           resolve();
         });
       });
@@ -308,6 +313,7 @@ export abstract class AbstractPlayer implements OnInit {
   }
 
   public deInitialize(): void {
+
     this.unBindListeners();
     if (this._initialised) {
       this.stop();

@@ -9,12 +9,17 @@ import {TracksYoutubeTopicsCollection} from './tracks-youtube-topics.collection'
 import {ITrack} from './track.interface';
 import {ImageYoutubeModel} from '../image/image-youtube.model';
 import {AccountYoutubeModel} from '../account/account-youtube.model';
+import {queryParam} from '../../backbone/decorators/query-param.decorator';
+import {isObject} from 'underscore';
 
 export class TrackYoutubeModel extends YoutubeProxyModel implements ITrack {
   private _topics: TracksYoutubeTopicsCollection<TracksYoutubeTopicModel>;
   endpoint = '/videos';
 
   isLikeable = false;
+
+  @queryParam()
+  part = 'snippet';
 
   @attributesKey('provider_id')
   @defaultValue('youtube')
@@ -117,10 +122,12 @@ export class TrackYoutubeModel extends YoutubeProxyModel implements ITrack {
   }
 
   parse(attributes) {
+    if (attributes.items && attributes.items.length === 1) {
+      attributes = attributes.items[0];
+    }
     const parsedTrack: any = {
-      id: attributes.id.videoId || attributes.id,
+      id: isObject(attributes.id) ? attributes.id.videoId : attributes.id
     };
-
     if (attributes.snippet) {
       parsedTrack.title = attributes.snippet.title;
       parsedTrack.createdAt = +new Date(attributes.snippet.publishedAt);
@@ -132,7 +139,7 @@ export class TrackYoutubeModel extends YoutubeProxyModel implements ITrack {
         };
       }
       parsedTrack.user = {
-        id: attributes.snippet.channelId,
+        id: attributes.snippet.channel,
         username: attributes.snippet.channelTitle
       };
     }
