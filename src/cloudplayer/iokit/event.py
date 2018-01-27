@@ -1,8 +1,8 @@
 """
-    cloudplayer.radio.event
+    cloudplayer.iokit.event
     ~~~~~~~~~~~~~~~~~~~~~~~
 
-    :copyright: (c) 2017 by the cloudplayer team
+    :copyright: (c) 2018 by the cloudplayer team
     :license: Apache-2.0, see LICENSE for details
 """
 import collections

@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='cloudplayer.radio',
-    version='0.2.0.dev0',
+    version='0.3.0.dev0',
     author='CloudPlayer',
     author_email='hello@cloud-player.io',
     url='https://cloud-player.io/radio',
@@ -18,7 +18,7 @@ setup(
     setup_requires=['setuptools_git'],
     install_requires=[
         'mock',
-        'RPi.GPIO',
+        'RPi.GPIO' if 'raspberrypi' in os.uname() else 'mock',
         'tornado',
         'luma.oled',
         'setuptools'
@@ -38,7 +38,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'engine=cloudplayer.radio.engine:main',
+            'radio=cloudplayer.radio.app:main',
             'pytest=pytest:main [test]',
             'test=pytest:main [test]'
         ]

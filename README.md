@@ -79,7 +79,7 @@ https://www.hifiberry.com/build/documentation/configuring-linux-3-18-x
 
 https://support.hifiberry.com/hc/en-us/articles/205377202-Adding-software-volume-control
 
-## radio engine
+## cloudplayer radio
 
 ### install
 ```
