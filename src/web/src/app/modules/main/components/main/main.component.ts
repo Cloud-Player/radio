@@ -14,7 +14,7 @@ import {PlayQueueItemStatus} from '../../../player/src/playqueue-item-status.enu
 })
 
 export class MainComponent implements OnInit, AfterViewInit {
-  private _noise = 0;
+  public noise = 0;
   public volume = 100;
   public playQueue: PlayQueue<PlayQueueItem>;
   public noiseQueue: PlayQueue<PlayQueueItem>;
@@ -47,7 +47,7 @@ export class MainComponent implements OnInit, AfterViewInit {
   }
 
   private setPlayerVolume() {
-    this.noiseVolume = this._noise * (this.volume / 100);
+    this.noiseVolume = this.noise * (this.volume / 100);
     this.playerVolume = this.volume - this.noiseVolume;
   }
 
@@ -57,7 +57,7 @@ export class MainComponent implements OnInit, AfterViewInit {
   }
 
   private onNoiseChange(noise: number) {
-    this._noise = noise;
+    this.noise = noise;
     this.setPlayerVolume();
   }
 
