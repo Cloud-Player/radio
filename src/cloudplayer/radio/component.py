@@ -22,29 +22,30 @@ from cloudplayer.iokit import Component, Potentiometer, RotaryEncoder
 
 class Display(BaseDisplay):
 
-    def __call__(self, event):
-        if event.action == Potentiometer.VALUE_CHANGED:
-            self.text('volume {}'.format(event.value))
-        elif event.action in (
-                RotaryEncoder.ROTATE_LEFT, RotaryEncoder.ROTATE_RIGHT):
-            width = int(self.device.width / 4)
-            height = int(self.device.height / 4)
-            image = self.buffer.copy()
-            for _ in range(20):
-                sx, tx = random.sample(range(self.device.width - 4), 2)
-                sy, ty = random.sample(range(self.device.height - 4), 2)
-                color = self.buffer.getpixel((sx, sy))
-                image.paste(color, (tx, ty, tx + 4, ty + 4))
-            self.draw(image)
-        elif event.action == Player.AUTH_START:
-            self.text(event.value)
-        elif event.action in Player.AUTH_DONE:
-            http_client = tornado.httpclient.HTTPClient()
-            response = http_client.fetch(
-                'https://i1.sndcdn.com/'
-                'artworks-000097449926-o475y8-t300x300.jpg')
-            image = Image.open(response.buffer)
-            self.draw(image)
+    def show_volume(self, event):
+        self.text('volume\n{}%'.format(int(event.value * 100)))
+
+    def show_token(self, event):
+        self.text('token\n{}'.format(event.value['id']))
+
+    def pixelate(self, event):
+        width = int(self.device.width / 8)
+        height = int(self.device.height / 8)
+        image = self.buffer.copy()
+        for _ in range(20):
+            sx, tx = random.sample(range(self.device.width - 8), 2)
+            sy, ty = random.sample(range(self.device.height - 8), 2)
+            color = self.buffer.getpixel((sx, sy))
+            image.paste(color, (tx, ty, tx + 8, ty + 8))
+        self.draw(image)
+
+    def say_hello(self, event):
+        http_client = tornado.httpclient.HTTPClient()
+        response = http_client.fetch(
+            'https://i1.sndcdn.com/'
+            'artworks-000097449926-o475y8-t300x300.jpg')
+        image = Image.open(response.buffer)
+        self.draw(image)
 
 
 class Server(BaseServer):
@@ -54,20 +55,21 @@ class Server(BaseServer):
             message = {'channel': channel, 'body': body, 'method': 'PUT'}
             super().write(message)
 
-    def __call__(self, event):
-        app_log.info('socket received volume %s' % event.value)
-        if event.action == Potentiometer.VALUE_CHANGED:
-            self.write(volume=event.value)
-        elif event.action == RotaryEncoder.ROTATE_LEFT:
-            self.write(frequency=1)
-        elif event.action == RotaryEncoder.ROTATE_RIGHT:
-            self.write(frequency=-1)
+    def update_volume(self, event):
+        self.write(volume=int(event.value * 100))
+
+    def update_noise(self, event):
+        self.write(noise=int(event.value * 100))
+
+    def update_queue(self, event):
+        self.write(queue=event.value)
 
 
 class Player(Component):
 
     AUTH_START = 'AUTH_START'
     AUTH_DONE = 'AUTH_DONE'
+    CTRL_NEXT = 'CTRL_NEXT'
 
     def __init__(self):
         super().__init__()
@@ -84,6 +86,17 @@ class Player(Component):
             self.start_login()
         else:
             self.say_hello()
+
+    def tuning(self, event):
+        if event.value == 100:
+            ioloop = tornado.ioloop.IOLoop.current()
+            ioloop.add_callback(self.switch_station)
+
+    @tornado.gen.coroutine
+    def switch_station(self):
+        response = yield self.fetch('/playlist/cloudplayer/40rrim0y7vn725ts')
+        playlist = tornado.escape.json_decode(response.body)
+        self.publish(self.CTRL_NEXT, playlist['items'])
 
     @tornado.gen.coroutine
     def fetch(self, url, **kw):
@@ -121,7 +134,7 @@ class Player(Component):
         self.token_callback = tornado.ioloop.PeriodicCallback(
             self.check_token, 1 * 1000)
         self.token_callback.start()
-        self.publish(self.AUTH_START, 'enter\n%s' % self.token['id'])
+        self.publish(self.AUTH_START, self.token)
         app_log.info('create %s' % self.token)
 
     @tornado.gen.coroutine

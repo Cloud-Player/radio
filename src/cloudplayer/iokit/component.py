@@ -20,11 +20,11 @@ class Component(object):
         raise NotImplementedError()
 
     def publish(self, action, value=None):
-        event = Event(action=action, source=self, value=value)
+        event = Event(action=action, publisher=self, value=value)
         EventManager.publish(event)
 
-    def subscribe(self, action, target):
-        EventManager.add_subscription(action, target, self)
+    def subscribe(self, action, subscriber):
+        EventManager.add_subscription(action, self, subscriber)
 
-    def unsubscribe(self, action, target):
-        EventManager.remove_subscription(action, target, self)
+    def unsubscribe(self, action, subscriber):
+        EventManager.remove_subscription(action, self, subscriber)

@@ -37,5 +37,5 @@ class Display(Component):
 
     def text(self, text):
         with canvas(self.device) as draw:
-            draw.multiline_text(
+            draw.text(
                 (0, 0), text, fill='white', align='center', font=self.font)

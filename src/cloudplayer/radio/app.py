@@ -61,23 +61,23 @@ def compose():
 
     server = Server()
 
+    player = Player()
+    player.subscribe(player.AUTH_START, display.show_token)
+    player.subscribe(player.AUTH_DONE, display.say_hello)
+    player.subscribe(player.CTRL_NEXT, server.update_queue)
+
     volume = Potentiometer(5, 6)
-    display.subscribe(volume.VALUE_CHANGED, volume)
-    server.subscribe(volume.VALUE_CHANGED, volume)
+    volume.subscribe(volume.VALUE_CHANGED, display.show_volume)
+    volume.subscribe(volume.VALUE_CHANGED, server.update_volume)
 
     mute = Input(13)
 
-    frequency = RotaryEncoder(27, 17)
-    display.subscribe(frequency.ROTATE_LEFT, frequency)
-    display.subscribe(frequency.ROTATE_RIGHT, frequency)
-    server.subscribe(frequency.ROTATE_LEFT, frequency)
-    server.subscribe(frequency.ROTATE_RIGHT, frequency)
+    frequency = Potentiometer(27, 17)
+    frequency.subscribe(frequency.VALUE_CHANGED, display.pixelate)
+    frequency.subscribe(frequency.VALUE_CHANGED, player.tuning)
+    frequency.subscribe(frequency.VALUE_CHANGED, server.update_noise)
 
     skip = Input(26)
-
-    player = Player()
-    display.subscribe(player.AUTH_START, player)
-    display.subscribe(player.AUTH_DONE, player)
 
 
 def teardown(*_):

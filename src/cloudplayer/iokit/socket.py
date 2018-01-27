@@ -72,21 +72,23 @@ class Server(Component):
     def on_open(self, ws_connection):
         app_log.info('socket open')
         self.ws_connection = ws_connection
-        for action, target in self.subscriptions:
-            super().subscribe(action, target)
-            app_log.info('sub {} {}'.format(action, target))
+        for action, subscriber in self.subscriptions:
+            super().subscribe(action, subscriber)
+            app_log.info('sub {} {}'.format(action, subscriber))
 
     def on_close(self):
         app_log.info('socket close')
         for action, target in self.subscriptions:
             super().unsubscribe(action, target)
-            app_log.info('desub {} {}'.format(action, target))
+            app_log.info('unsub {} {}'.format(action, target))
 
-    def subscribe(self, action, target):
-        self.subscriptions.add((action, target))
+    def subscribe(self, action, subscriber):
+        """Deferred subscribe method"""
+        self.subscriptions.add((action, subscriber))
 
-    def unsubscribe(self, action, target):
-        self.subscriptions.discard((action, target))
+    def unsubscribe(self, action, subscriber):
+        """Deferred unsubscribe method"""
+        self.subscriptions.discard((action, subscriber))
 
     def write(self, message):
         if self.ws_connection:

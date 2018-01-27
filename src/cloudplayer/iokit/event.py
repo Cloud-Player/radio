@@ -14,15 +14,15 @@ import tornado.queues
 
 class Event(object):
 
-    def __init__(self, action=None, source=None, value=None):
+    def __init__(self, action, publisher, value=None):
         self.action = action
-        self.source = source
+        self.publisher = publisher
         self.value = value
 
     def __repr__(self):
-        return '<{}.{} action="{}" source="{}" value="{}">'.format(
+        return '<{}.{} action="{}" publisher="{}" value="{}">'.format(
             self.__class__.__module__, self.__class__.__name__,
-            self.action, self.source.__class__.__name__, self.value)
+            self.action, self.publisher.__class__.__name__, self.value)
 
 
 class EventManager(tornado.ioloop.PeriodicCallback):
@@ -34,17 +34,17 @@ class EventManager(tornado.ioloop.PeriodicCallback):
         super().__init__(self.process, callback_time)
 
     @classmethod
-    def add_subscription(cls, action, source, target):
-        trigger = '{}@{}'.format(action, source.uuid)
+    def add_subscription(cls, action, publisher, subscriber):
+        trigger = '{}@{}'.format(action, publisher.uuid)
         if trigger not in cls.subscriptions:
             cls.subscriptions[trigger] = set()
-        cls.subscriptions[trigger].add(target)
+        cls.subscriptions[trigger].add(subscriber)
 
     @classmethod
-    def remove_subscription(cls, action, source, target):
-        trigger = '{}@{}'.format(action, source.uuid)
+    def remove_subscription(cls, action, publisher, subscriber):
+        trigger = '{}@{}'.format(action, publisher.uuid)
         if trigger in cls.subscriptions:
-            cls.subscriptions[trigger].discard(target)
+            cls.subscriptions[trigger].discard(subscriber)
 
     @classmethod
     def publish(cls, event):
@@ -54,9 +54,9 @@ class EventManager(tornado.ioloop.PeriodicCallback):
     async def process(cls):
         async for event in cls.queue:
             try:
-                trigger = '{}@{}'.format(event.action, event.source.uuid)
-                for component in cls.subscriptions[trigger]:
-                    component(event)
+                trigger = '{}@{}'.format(event.action, event.publisher.uuid)
+                for subscriber in cls.subscriptions[trigger]:
+                    subscriber(event)
             except:
                 traceback.print_exc()
             finally:
