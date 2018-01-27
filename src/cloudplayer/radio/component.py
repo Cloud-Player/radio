@@ -29,14 +29,14 @@ class Display(BaseDisplay):
         self.text('token\n{}'.format(event.value['id']))
 
     def pixelate(self, event):
-        width = int(self.device.width / 8)
-        height = int(self.device.height / 8)
+        width = int(self.device.width / 16)
+        height = int(self.device.height / 16)
         image = self.buffer.copy()
-        for _ in range(20):
-            sx, tx = random.sample(range(self.device.width - 8), 2)
-            sy, ty = random.sample(range(self.device.height - 8), 2)
+        for _ in range(5):
+            sx, tx = random.sample(range(self.device.width - 16), 2)
+            sy, ty = random.sample(range(self.device.height - 16), 2)
             color = self.buffer.getpixel((sx, sy))
-            image.paste(color, (tx, ty, tx + 8, ty + 8))
+            image.paste(color, (tx, ty, tx + 16, ty + 16))
         self.draw(image)
 
     def say_hello(self, event):
@@ -87,10 +87,13 @@ class Player(Component):
         else:
             self.say_hello()
 
-    def tuning(self, event):
+    def tune(self, event):
         if event.value == 100:
-            ioloop = tornado.ioloop.IOLoop.current()
-            ioloop.add_callback(self.switch_station)
+            self.skip(event)
+
+    def skip(self, event):
+        ioloop = tornado.ioloop.IOLoop.current()
+        ioloop.add_callback(self.switch_station)
 
     @tornado.gen.coroutine
     def switch_station(self):
