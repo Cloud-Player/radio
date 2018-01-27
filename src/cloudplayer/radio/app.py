@@ -63,9 +63,10 @@ def compose():
     player = Player()
 
     server.subscribe(server.SOCKET_OPENED, player.skip)
+    server.subscribe(server.SOCKET_MESSAGE, player.on_message)
     player.subscribe(player.AUTH_START, display.show_token)
-    player.subscribe(player.AUTH_DONE, display.say_hello)
     player.subscribe(player.CTRL_NEXT, server.update_queue)
+    player.subscribe(player.QUEUE_ITEM, display.now_playing)
 
     volume = Potentiometer(5, 6)
     volume.subscribe(volume.VALUE_CHANGED, display.show_volume)

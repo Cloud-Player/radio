@@ -5,6 +5,7 @@
     :copyright: (c) 2018 by the cloudplayer team
     :license: Apache-2.0, see LICENSE for details
 """
+import functools
 import random
 
 from PIL import Image
@@ -39,11 +40,9 @@ class Display(BaseDisplay):
             image.paste(color, (tx, ty, tx + 16, ty + 16))
         self.draw(image)
 
-    def say_hello(self, event):
+    def now_playing(self, event):
         http_client = tornado.httpclient.HTTPClient()
-        response = http_client.fetch(
-            'https://i1.sndcdn.com/'
-            'artworks-000097449926-o475y8-t300x300.jpg')
+        response = http_client.fetch(event.value['image']['small'])
         image = Image.open(response.buffer)
         self.draw(image)
 
@@ -70,6 +69,7 @@ class Player(Component):
     AUTH_START = 'AUTH_START'
     AUTH_DONE = 'AUTH_DONE'
     CTRL_NEXT = 'CTRL_NEXT'
+    QUEUE_ITEM = 'QUEUE_ITEM'
 
     def __init__(self):
         super().__init__()
@@ -86,6 +86,19 @@ class Player(Component):
             self.start_login()
         else:
             self.say_hello()
+
+    def on_message(self, event):
+        ioloop = tornado.ioloop.IOLoop.current()
+        if event.value['channel'] == 'queue_item':
+            ioloop.add_callback(
+                functools.partial(self.queue_item, event.value['body']))
+
+    @tornado.gen.coroutine
+    def queue_item(self, item):
+        response = yield self.fetch('/track/{}/{}'.format(
+            item['track_provider_id'], item['track_id']))
+        track = tornado.escape.json_decode(response.body)
+        self.publish(self.QUEUE_ITEM, track)
 
     def tune(self, event):
         if event.value == 100:

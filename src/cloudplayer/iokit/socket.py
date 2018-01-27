@@ -42,6 +42,7 @@ class Handler(tornado.websocket.WebSocketHandler):
         self.open_callback(self.ws_connection)
 
     def on_message(self, message):
+        message = tornado.escape.json_decode(message)
         self.message_callback(message)
 
     def on_close(self):
@@ -88,7 +89,7 @@ class Server(Component):
         self.publish(self.SOCKET_OPENED)
 
     def on_message(self, message):
-        pass
+        self.publish(self.SOCKET_MESSAGE, message)
 
     def on_close(self):
         app_log.info('socket close')
