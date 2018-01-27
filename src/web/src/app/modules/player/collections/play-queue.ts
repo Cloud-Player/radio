@@ -192,16 +192,6 @@ export class PlayQueue<TModel extends PlayQueueItem> extends BaseCollection<TMod
       return super.add(item, options);
     }
 
-    if (isArray(item)) {
-      const addedItems: Array<PlayQueueItem> = [];
-      item.forEach((obj: any) => {
-        addedItems.push(this.prepareItem(obj));
-      });
-      item = addedItems;
-    } else {
-      item = this.prepareItem(item);
-    }
-
     item = super.add(item, options);
 
     this.ensureQueuingOrder();
@@ -238,5 +228,7 @@ export class PlayQueue<TModel extends PlayQueueItem> extends BaseCollection<TMod
     this.on('remove', () => {
       this.setPlayIndex();
     });
+
+    this.on('add', this.prepareItem.bind(this));
   }
 }
