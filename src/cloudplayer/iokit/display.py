@@ -5,7 +5,7 @@
     :copyright: (c) 2018 by the cloudplayer team
     :license: Apache-2.0, see LICENSE for details
 """
-from PIL import ImageFont, Image
+from PIL import ImageFont, ImageDraw, Image
 from luma.core.render import canvas
 
 from cloudplayer.iokit.component import Component

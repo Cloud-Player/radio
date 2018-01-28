@@ -127,7 +127,7 @@ class Player(Component):
         self.publish(self.CTRL_NEXT, playlist['items'])
 
     @tornado.gen.coroutine
-    def fetch(self, url, **kw):
+    def fetch(self, url, capture_cookies=True, **kw):
         url = '{}/{}'.format(opt.options['api_base_url'], url.lstrip('/'))
         headers = kw.pop('headers', {})
         if self.cookie:
@@ -138,7 +138,7 @@ class Player(Component):
 
         cookie_headers = response.headers.get_list('Set-Cookie')
         new_cookies = ';'.join(c.split(';', 1)[0] for c in cookie_headers)
-        if new_cookies:
+        if new_cookies and capture_cookies:
             self.cookie = new_cookies
             with open('tok_v1.cookie', 'w') as fh:
                 fh.write(self.cookie)
@@ -156,7 +156,7 @@ class Player(Component):
         if self.token_callback:
             self.token_callback.stop()
 
-        response = yield self.fetch('/token', method='POST', body='')
+        response = yield self.fetch('/token', False, method='POST', body='')
 
         self.token = tornado.escape.json_decode(response.body)
         self.token_callback = tornado.ioloop.PeriodicCallback(
