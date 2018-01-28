@@ -76,6 +76,10 @@ class Server(BaseServer):
     def update_queue(self, event):
         self.write(queue=event.value)
 
+    def skip_track(self, event):
+        if event.value:
+            self.write(playerState='next')
+
 
 class Player(Component):
 

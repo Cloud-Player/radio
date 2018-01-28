@@ -81,6 +81,7 @@ def compose():
     frequency.subscribe(frequency.VALUE_CHANGED, server.update_noise)
 
     skip = Input(26)
+    skip.subscribe(skip.VALUE_CHANGED, server.skip_track)
 
 
 def teardown(*_):
