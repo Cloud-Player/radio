@@ -25,9 +25,11 @@ class Display(Component):
             self.FONT_FILE, self.FONT_SIZE, 0, 'unic')
         self.device = device
         self.runner = None
-        self.frame = None
+        self.frame = Image.new(device.mode, device.size)
 
     def draw(self, image, key_frame=True):
+        if image is None:
+            return
         width, height = image.size
         min_edge = float(min(width, height))
         pad_left = (width - min_edge) / 2.0

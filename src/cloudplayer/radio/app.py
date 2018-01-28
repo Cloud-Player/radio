@@ -66,7 +66,7 @@ def compose():
     server.subscribe(server.SOCKET_MESSAGE, player.on_message)
     player.subscribe(player.AUTH_START, display.show_token)
     player.subscribe(player.CTRL_NEXT, server.update_queue)
-    player.subscribe(player.QUEUE_ITEM, display.now_playing)
+    player.subscribe(player.QUEUE_ITEM, display.current_track)
 
     mute = Input(13)
     volume = Volume(5, 6)

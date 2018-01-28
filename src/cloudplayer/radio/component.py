@@ -33,7 +33,25 @@ class Volume(Potentiometer):
             self.mute = not self.mute
 
 
+class Pixelation(dict):
+
+    def __init__(self, width, height, pixel_size=1, steps=100):
+        for s in range(steps):
+            self[s] = []
+            for _ in range(s):
+                sx, tx = random.sample(range(width - pixel_size), 2)
+                sy, ty = random.sample(range(height - pixel_size), 2)
+                src = sx, sy
+                bbox = tx, ty, tx + pixel_size, ty + pixel_size
+                self[s].append((src, bbox))
+
+
 class Display(BaseDisplay):
+
+    def __init__(self, device):
+        super().__init__(device)
+        self.pixelation = Pixelation(*device.size, pixel_size=16, steps=32)
+        self.current_image = Image.new(device.mode, device.size)
 
     def show_volume(self, event):
         self.text('volume\n{}%'.format(int(event.value * 100)), 500)
@@ -44,15 +62,13 @@ class Display(BaseDisplay):
     def pixelate(self, event):
         width = int(self.device.width / 16)
         height = int(self.device.height / 16)
-        image = self.frame.copy()
-        for _ in range(5):
-            sx, tx = random.sample(range(self.device.width - 16), 2)
-            sy, ty = random.sample(range(self.device.height - 16), 2)
-            color = self.frame.getpixel((sx, sy))
-            image.paste(color, (tx, ty, tx + 16, ty + 16))
+        image = self.current_image.copy()
+        for src, bbox in self.pixelation.get(event.value):
+            color = self.current_image.getpixel(src)
+            image.paste(color, bbox)
         self.draw(image)
 
-    def now_playing(self, event):
+    def current_track(self, event):
         http_client = tornado.httpclient.HTTPClient()
         image = event.value.get('image')
         if not image:
@@ -60,8 +76,8 @@ class Display(BaseDisplay):
             if not image:
                 return
         response = http_client.fetch(image['small'])
-        image = Image.open(response.buffer)
-        self.draw(image)
+        self.current_image = Image.open(response.buffer)
+        self.draw(self.current_image)
 
 
 class Server(BaseServer):
