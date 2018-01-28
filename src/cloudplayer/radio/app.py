@@ -19,7 +19,7 @@ import tornado.web
 
 from cloudplayer.iokit import Input, Potentiometer, RotaryEncoder
 from cloudplayer.iokit import GPIO, EventManager
-from cloudplayer.radio.component import Display, Server, Player
+from cloudplayer.radio.component import Display, Server, Player, Volume
 
 
 def define_options():
@@ -68,11 +68,11 @@ def compose():
     player.subscribe(player.CTRL_NEXT, server.update_queue)
     player.subscribe(player.QUEUE_ITEM, display.now_playing)
 
-    volume = Potentiometer(5, 6)
+    mute = Input(13)
+    volume = Volume(5, 6)
+    mute.subscribe(mute.VALUE_CHANGED, volume.toggle_mute)
     volume.subscribe(volume.VALUE_CHANGED, display.show_volume)
     volume.subscribe(volume.VALUE_CHANGED, server.update_volume)
-
-    mute = Input(13)
 
     frequency = Potentiometer(27, 17)
     frequency.subscribe(frequency.VALUE_CHANGED, display.pixelate)

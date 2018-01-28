@@ -67,6 +67,7 @@ class Server(Component):
 
     SOCKET_OPENED = 'SOCKET_OPENED'
     SOCKET_CLOSED = 'SOCKET_CLOSED'
+    SOCKET_MESSAGE = 'SOCKET_MESSAGE'
 
     def __init__(self):
         super().__init__()

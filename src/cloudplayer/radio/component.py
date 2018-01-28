@@ -18,7 +18,13 @@ import tornado.options as opt
 
 from cloudplayer.iokit import Display as BaseDisplay
 from cloudplayer.iokit import Server as BaseServer
-from cloudplayer.iokit import Component, Potentiometer, RotaryEncoder
+from cloudplayer.iokit import Component, Potentiometer
+
+
+class Volume(Potentiometer):
+
+    def toggle_mute(self, event):
+        self.publish(Potentiometer.VALUE_CHANGED, event.value * self.value)
 
 
 class Display(BaseDisplay):
