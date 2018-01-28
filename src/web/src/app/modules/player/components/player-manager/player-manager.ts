@@ -209,6 +209,7 @@ export class PlayerManagerComponent implements OnInit, OnChanges {
 
     if (oldPlayer) {
       this.removePlayer(oldPlayer);
+      this._upcomingPlayer = null;
     }
 
     if (canPlay) {
@@ -230,7 +231,6 @@ export class PlayerManagerComponent implements OnInit, OnChanges {
     this.bindListeners(newPlayer.instance);
 
     this._activePlayer = newPlayer;
-    this._upcomingPlayer = null;
   }
 
   private reusePlayer(existingPlayer: ComponentRef<IPlayer>, playQueueItem: PlayQueueItem, startTime?: number) {
