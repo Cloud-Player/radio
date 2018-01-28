@@ -114,7 +114,8 @@ export class PlayerFactory {
     if (reusablePlayer) {
       const reusablePlayerComponent = reusablePlayer.component;
 
-      if (reusablePlayerComponent.instance.track.id === item.track.id &&
+      if (reusablePlayerComponent.instance.track &&
+        reusablePlayerComponent.instance.track.id === item.track.id &&
         reusablePlayerComponent.instance.getStatus() === PlayerStatus.Playing) {
         return reusablePlayer.component;
       }
