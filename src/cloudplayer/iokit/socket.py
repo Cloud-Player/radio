@@ -90,6 +90,7 @@ class Server(Component):
         self.publish(self.SOCKET_OPENED)
 
     def on_message(self, message):
+        app_log.info('message was received %s' % message)
         self.publish(self.SOCKET_MESSAGE, message)
 
     def on_close(self):

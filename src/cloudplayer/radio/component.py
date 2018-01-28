@@ -8,7 +8,7 @@
 import functools
 import random
 
-from PIL import Image
+from PIL import Image, ImageFilter
 from tornado.log import app_log
 import tornado.escape
 import tornado.gen
@@ -33,25 +33,7 @@ class Volume(Potentiometer):
             self.mute = not self.mute
 
 
-class Pixelation(dict):
-
-    def __init__(self, width, height, pixel_size=1, steps=100):
-        for s in range(steps):
-            self[s] = []
-            for _ in range(s):
-                sx, tx = random.sample(range(width - pixel_size), 2)
-                sy, ty = random.sample(range(height - pixel_size), 2)
-                src = sx, sy
-                bbox = tx, ty, tx + pixel_size, ty + pixel_size
-                self[s].append((src, bbox))
-
-
 class Display(BaseDisplay):
-
-    def __init__(self, device):
-        super().__init__(device)
-        self.pixelation = Pixelation(*device.size, pixel_size=16, steps=32)
-        self.current_image = Image.new(device.mode, device.size)
 
     def show_volume(self, event):
         self.text('volume\n{}%'.format(int(event.value * 100)), 500)
@@ -59,13 +41,9 @@ class Display(BaseDisplay):
     def show_token(self, event):
         self.text('token\n{}'.format(event.value['id']))
 
-    def pixelate(self, event):
-        width = int(self.device.width / 16)
-        height = int(self.device.height / 16)
-        image = self.current_image.copy()
-        for src, bbox in self.pixelation.get(event.value):
-            color = self.current_image.getpixel(src)
-            image.paste(color, bbox)
+    def filter_image(self, event):
+        image = self.key_frame.filter(
+            ImageFilter.ModeFilter(size=int(event.value * 10.0)))
         self.draw(image)
 
     def current_track(self, event):
@@ -75,9 +53,8 @@ class Display(BaseDisplay):
             image = event.value['account'].get('image')
             if not image:
                 return
-        response = http_client.fetch(image['small'])
-        self.current_image = Image.open(response.buffer)
-        self.draw(self.current_image)
+        response = http_client.fetch(image['medium'])
+        self.draw(Image.open(response.buffer), key_frame=True)
 
 
 class Server(BaseServer):
@@ -156,8 +133,7 @@ class Player(Component):
     @tornado.gen.coroutine
     def switch_station(self):
         if self.is_logged_in:
-            path = '/playlist/cloudplayer/40rrim0y7vn725ts'
-            response = yield self.fetch(path)
+            response = yield self.fetch('/playlist/cloudplayer/random')
             playlist = tornado.escape.json_decode(response.body)
             self.publish(self.CTRL_NEXT, playlist['items'])
         else:
