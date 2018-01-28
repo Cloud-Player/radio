@@ -177,7 +177,7 @@ export abstract class AbstractPlayer implements OnInit {
   }
 
   protected onPaused() {
-    if (this._forcePlayStart && this._forcePlayStartTry < 5) {
+    if (this._forcePlayStart && this._forcePlayStartTry < 5 && this._currentTime !== this._duration) {
       this._forcePlayStartTry++;
       this.play();
     } else {
