@@ -145,8 +145,10 @@ export class PlayerManagerComponent implements OnInit, OnChanges {
     this._playerSubscriptions.add(
       player.currentTimeChange
         .filter((currentTime: number) => {
-          if (player.getDuration()) {
-            return currentTime >= (player.getDuration() - this._prepareTime);
+          if (this._upcomingPlayer && this._upcomingPlayer.instance.getStatus() === PlayerStatus.Playing) {
+            return false;
+          } else if (player.getDuration()) {
+            return currentTime >= player.getDuration() - this._prepareTime;
           }
         })
         .subscribe(currentTime => {
