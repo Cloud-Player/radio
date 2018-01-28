@@ -44,17 +44,22 @@ class Display(BaseDisplay):
     def pixelate(self, event):
         width = int(self.device.width / 16)
         height = int(self.device.height / 16)
-        image = self.buffer.copy()
+        image = self.frame.copy()
         for _ in range(5):
             sx, tx = random.sample(range(self.device.width - 16), 2)
             sy, ty = random.sample(range(self.device.height - 16), 2)
-            color = self.buffer.getpixel((sx, sy))
+            color = self.frame.getpixel((sx, sy))
             image.paste(color, (tx, ty, tx + 16, ty + 16))
         self.draw(image)
 
     def now_playing(self, event):
         http_client = tornado.httpclient.HTTPClient()
-        response = http_client.fetch(event.value['image']['small'])
+        image = event.value.get('image')
+        if not image:
+            image = event.value['account'].get('image')
+            if not image:
+                return
+        response = http_client.fetch(image['small'])
         image = Image.open(response.buffer)
         self.draw(image)
 
