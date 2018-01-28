@@ -120,7 +120,7 @@ class Player(Component):
             self.add_callback(func)
 
     def frequency_changed(self, event):
-        if event.value == 100:
+        if event.value == 1.0:
             self.add_callback(self.switch_station)
 
     @tornado.gen.coroutine
