@@ -83,7 +83,13 @@ export class PlayerManagerComponent implements OnInit, OnChanges {
         break;
       case PlayerStatus.Ended:
         if (this.playQueue.hasNextItem()) {
-          this.playQueue.getNextItem().play();
+          const nextItem = this.playQueue.getNextItem();
+          const currentItem = this.playQueue.getCurrentItem();
+          if (nextItem.id !== currentItem.id) {
+            this.playQueue.getNextItem().play();
+          } else {
+            this.playQueue.getNextItem().restart();
+          }
         } else {
           this.playQueue.getCurrentItem().stop();
         }
@@ -103,6 +109,30 @@ export class PlayerManagerComponent implements OnInit, OnChanges {
     this._playerSubscriptions = new Subscription();
   }
 
+  private getFadeDuration() {
+    if (this._activePlayer && this._upcomingPlayer) {
+      const currentPlayerDuration = this._activePlayer.instance.getDuration();
+      const upcomingPlayerDuration = this._upcomingPlayer.instance.getDuration();
+      const maxFadeDuration = Math.min(currentPlayerDuration / 2, upcomingPlayerDuration / 2);
+      const minFadeDuration = Math.min(this._fadeDuration, maxFadeDuration);
+      if (maxFadeDuration < minFadeDuration) {
+        return maxFadeDuration;
+      } else {
+        return minFadeDuration;
+      }
+    } else {
+      return 0;
+    }
+  }
+
+  private getFadeStartTime() {
+    if (this._activePlayer && this._activePlayer.instance.getDuration() > 0) {
+      return this._activePlayer.instance.getDuration() - this.getFadeDuration();
+    } else {
+      return false;
+    }
+  }
+
   private bindListeners(player: IPlayer): void {
     this.unBindListeners();
 
@@ -115,8 +145,10 @@ export class PlayerManagerComponent implements OnInit, OnChanges {
     this._playerSubscriptions.add(
       player.currentTimeChange
         .filter((currentTime: number) => {
-          if (player.getDuration()) {
-            return currentTime >= (player.getDuration() - this._prepareTime);
+          if (this._upcomingPlayer && this._upcomingPlayer.instance.getStatus() === PlayerStatus.Playing) {
+            return false;
+          } else if (player.getDuration()) {
+            return currentTime >= player.getDuration() - this._prepareTime;
           }
         })
         .subscribe(currentTime => {
@@ -127,11 +159,8 @@ export class PlayerManagerComponent implements OnInit, OnChanges {
     const crossFadeSubscription = this._playerSubscriptions.add(
       player.currentTimeChange
         .filter(currentTime => {
-          if (player.getDuration() > this._fadeDuration) {
-            return currentTime >= player.getDuration() - this._fadeDuration;
-          } else {
-            return false;
-          }
+          const fadeStartTime = this.getFadeStartTime();
+          return fadeStartTime && currentTime >= fadeStartTime;
         })
         .subscribe(() => {
           crossFadeSubscription.unsubscribe();
@@ -168,9 +197,11 @@ export class PlayerManagerComponent implements OnInit, OnChanges {
       nextPlayer.instance.play().then(() => {
         nextPlayer.instance.setSize(PlayerFactory.getPlayerSize(nextPlayer.instance.track));
         nextPlayer.instance.setVolume(this._volume);
-        nextPlayer.instance.fadeIn(this._fadeDuration * 1000);
-        currentPlayer.instance.fadeOut(this._fadeDuration * 1000);
-        EaseService.easeInCirc(0, 1, (this._fadeDuration - 1) * 1000)
+
+        const fadeDuration = this.getFadeDuration();
+        nextPlayer.instance.fadeIn(fadeDuration * 1000);
+        currentPlayer.instance.fadeOut(fadeDuration * 1000);
+        EaseService.easeInCirc(0, 1, (fadeDuration - 1) * 1000)
           .subscribe((value: number) => {
             nextPlayer.instance.setOpacity(value);
           });
@@ -209,6 +240,7 @@ export class PlayerManagerComponent implements OnInit, OnChanges {
 
     if (oldPlayer) {
       this.removePlayer(oldPlayer);
+      this._upcomingPlayer = null;
     }
 
     if (canPlay) {
@@ -230,7 +262,6 @@ export class PlayerManagerComponent implements OnInit, OnChanges {
     this.bindListeners(newPlayer.instance);
 
     this._activePlayer = newPlayer;
-    this._upcomingPlayer = null;
   }
 
   private reusePlayer(existingPlayer: ComponentRef<IPlayer>, playQueueItem: PlayQueueItem, startTime?: number) {

@@ -177,7 +177,7 @@ export abstract class AbstractPlayer implements OnInit {
   }
 
   protected onPaused() {
-    if (this._forcePlayStart && this._forcePlayStartTry < 5) {
+    if (this._forcePlayStart && this._forcePlayStartTry < 5 && this._currentTime !== this._duration) {
       this._forcePlayStartTry++;
       this.play();
     } else {
@@ -313,13 +313,14 @@ export abstract class AbstractPlayer implements OnInit {
   }
 
   public deInitialize(): void {
-
     this.unBindListeners();
     if (this._initialised) {
       this.stop();
       this.deInitialisePlayer();
     }
     this.setDuration(0);
+    this.track = null;
+    this._forcePlayStart = false;
     this._initialised = false;
     this._initialisePromise = null;
     this.setAllowedToPlay(false);
@@ -341,14 +342,18 @@ export abstract class AbstractPlayer implements OnInit {
       if (isNumber(from)) {
         this.seekTo(from);
       }
-      this.startPlayer();
+      if (this.track) {
+        this.startPlayer();
+      } else {
+        throw new Error('No track has been set to play!');
+      }
     });
     return this.resolveOnStatus(PlayerStatus.Playing);
   }
 
   public pause(): Promise<any> {
     this._forcePlayStart = false;
-    if (this._initialised) {
+    if (this._initialised && this._status !== PlayerStatus.Stopped && this._status !== PlayerStatus.Paused) {
       this.pausePlayer();
       return this.resolveOnOneOfStatus([PlayerStatus.Stopped, PlayerStatus.Paused]);
     } else {
@@ -359,7 +364,7 @@ export abstract class AbstractPlayer implements OnInit {
   public stop(): Promise<any> {
     this.setAllowedToPlay(false);
     this._forcePlayStart = false;
-    if (this._initialised) {
+    if (this._initialised && this._status !== PlayerStatus.Stopped && this._status !== PlayerStatus.Paused) {
       this.stopPlayer();
       return this.resolveOnOneOfStatus([PlayerStatus.Stopped, PlayerStatus.Paused]);
     } else {
@@ -395,7 +400,7 @@ export abstract class AbstractPlayer implements OnInit {
   }
 
   public updateTrack(track: ITrack): Promise<any> {
-    if (track.id === this.track.id) {
+    if (this.track && track.id === this.track.id) {
       return Promise.resolve();
     } else {
       this.setStatus(PlayerStatus.Updating);
