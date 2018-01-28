@@ -150,8 +150,7 @@ class Player(Component):
         if self.cookie:
             headers['Cookie'] = self.cookie
 
-        response = yield self.http_client.fetch(
-            url, headers=headers, validate_cert=False, **kw)
+        response = yield self.http_client.fetch(url, headers=headers, **kw)
 
         cookie_headers = response.headers.get_list('Set-Cookie')
         new_cookies = ';'.join(c.split(';', 1)[0] for c in cookie_headers)
