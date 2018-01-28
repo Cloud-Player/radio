@@ -56,5 +56,6 @@ class Potentiometer(Component):
         self.update_value(max(self.value - self.step, 0.0))
 
     def update_value(self, value):
-        self.value = value
-        self.publish(Potentiometer.VALUE_CHANGED, self.value)
+        if self.value != value:
+            self.value = value
+            self.publish(Potentiometer.VALUE_CHANGED, value)
