@@ -35,6 +35,10 @@ class Volume(Potentiometer):
 
 class Display(BaseDisplay):
 
+    def __init__(self, device):
+        super().__init__(device)
+        self.filter = ImageFilter.ModeFilter(0)
+
     def show_volume(self, event):
         self.text('volume\n{}%'.format(int(event.value * 100)), 500)
 
@@ -42,9 +46,8 @@ class Display(BaseDisplay):
         self.text('token\n{}'.format(event.value['id']))
 
     def filter_image(self, event):
-        image = self.key_frame.filter(
-            ImageFilter.ModeFilter(size=int(event.value * 10.0)))
-        self.draw(image)
+        self.filter = ImageFilter.ModeFilter(int(event.value * 10.0))
+        self.draw(self.key_frame)
 
     def current_track(self, event):
         http_client = tornado.httpclient.HTTPClient()
@@ -120,7 +123,8 @@ class Player(Component):
             self.add_callback(func)
 
     def frequency_changed(self, event):
-        if event.value == 1.0:
+        if event.value == 1.0 and self.track:
+            self.track = None
             self.add_callback(self.switch_station)
 
     @tornado.gen.coroutine

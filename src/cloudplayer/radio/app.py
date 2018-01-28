@@ -69,7 +69,7 @@ def compose():
     player.subscribe(player.QUEUE_ITEM, display.current_track)
 
     mute = Input(13)
-    volume = Volume(5, 6, initial=0.2)
+    volume = Volume(5, 6, initial=0.1)
     mute.subscribe(mute.VALUE_CHANGED, volume.toggle_mute)
     volume.subscribe(volume.VALUE_CHANGED, display.show_volume)
     volume.subscribe(volume.VALUE_CHANGED, server.update_volume)

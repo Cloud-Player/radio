@@ -39,10 +39,11 @@ class Display(Component):
         pad_bottom = height - pad_top
         image = image.crop((pad_left, pad_top, pad_right, pad_bottom))
         image = image.resize((self.device.width, self.device.height))
-        if frame:
-            self.frame = image.copy()
         if key_frame:
             self.key_frame = image.copy()
+        if frame:
+            image = image.filter(self.filter)
+            self.frame = image.copy()
         self.device.display(image)
 
     def text(self, text, timeout=None):
