@@ -157,12 +157,10 @@ class Player(Component):
 
     @tornado.gen.coroutine
     def create_token(self):
+        response = yield self.fetch('/token', False, method='POST', body='')
+        self.token = tornado.escape.json_decode(response.body)
         if self.token_callback:
             self.token_callback.stop()
-
-        response = yield self.fetch('/token', False, method='POST', body='')
-
-        self.token = tornado.escape.json_decode(response.body)
         self.token_callback = tornado.ioloop.PeriodicCallback(
             self.check_token, 1 * 1000)
         self.token_callback.start()
