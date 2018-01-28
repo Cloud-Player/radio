@@ -17,9 +17,10 @@ import tornado.ioloop
 import tornado.options as opt
 import tornado.web
 
-from cloudplayer.iokit import Input, Potentiometer, RotaryEncoder
+from cloudplayer.iokit import Input
 from cloudplayer.iokit import GPIO, EventManager
-from cloudplayer.radio.component import Display, Server, Player, Volume
+from cloudplayer.radio.component import Display, Server, Player
+from cloudplayer.radio.component import Volume, Frequency
 
 
 def define_options():
@@ -75,7 +76,7 @@ def compose():
     volume.subscribe(volume.VALUE_CHANGED, display.show_volume)
     volume.subscribe(volume.VALUE_CHANGED, server.update_volume)
 
-    frequency = Potentiometer(27, 17, steps=10.0)
+    frequency = Frequency(27, 17, steps=10.0)
     frequency.subscribe(frequency.VALUE_CHANGED, display.filter_image)
     frequency.subscribe(frequency.VALUE_CHANGED, player.frequency_changed)
     frequency.subscribe(frequency.VALUE_CHANGED, server.update_noise)

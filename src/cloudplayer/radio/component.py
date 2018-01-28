@@ -6,6 +6,7 @@
     :license: Apache-2.0, see LICENSE for details
 """
 import functools
+import math
 import random
 
 from PIL import Image, ImageFilter
@@ -31,6 +32,13 @@ class Volume(Potentiometer):
         if event.value:
             self.publish(Potentiometer.VALUE_CHANGED, self.mute * self.value)
             self.mute = not self.mute
+
+
+class Frequency(Potentiometer):
+
+    def update_value(self, value):
+        value = 1.0 - (max(math.cos(x), 0.0))
+        super().update_value(value)
 
 
 class Display(BaseDisplay):

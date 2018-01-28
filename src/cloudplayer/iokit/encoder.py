@@ -50,12 +50,13 @@ class Potentiometer(Component):
         self.step = 1.0 / steps
 
     def rotate_left(self, event):
-        self.update_value(min(self.value + self.step, 1.0))
+        self.update_value(self.value - self.step)
 
     def rotate_right(self, event):
-        self.update_value(max(self.value - self.step, 0.0))
+        self.update_value(self.value + self.step)
 
     def update_value(self, value):
+        value = max(min(value, 1.0), 0.0)
         if self.value != value:
             self.value = value
             self.publish(Potentiometer.VALUE_CHANGED, value)
