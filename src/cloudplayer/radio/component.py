@@ -88,6 +88,7 @@ class Player(Component):
         self.http_client = tornado.httpclient.AsyncHTTPClient()
         self.cookie = None
         self.token = None
+        self.track = None
         self.login_callback = None
         self.token_callback = None
         try:
@@ -99,30 +100,41 @@ class Player(Component):
         else:
             self.say_hello()
 
+    @property
+    def is_logged_in(self):
+        if self.login_callback:
+            if self.login_callback.is_running():
+                return False
+        if self.token_callback:
+            if self.token_callback.is_running():
+                return False
+        if not self.cookie:
+            return False
+        return True
+
+    def on_open(self, event):
+        if self.track is None:
+            self.add_callback(self.switch_station)
+
     def on_message(self, event):
-        ioloop = tornado.ioloop.IOLoop.current()
         if event.value['channel'] == 'queue_item':
-            ioloop.add_callback(
-                functools.partial(self.queue_item, event.value['body']))
+            func = functools.partial(self.resolve_item, event.value['body'])
+            self.add_callback(func)
+
+    def frequency_changed(self, event):
+        if event.value == 100:
+            self.add_callback(self.switch_station)
 
     @tornado.gen.coroutine
-    def queue_item(self, item):
+    def resolve_item(self, item):
         response = yield self.fetch('/track/{}/{}'.format(
             item['track_provider_id'], item['track_id']))
-        track = tornado.escape.json_decode(response.body)
-        self.publish(self.QUEUE_ITEM, track)
-
-    def tune(self, event):
-        if event.value == 100:
-            self.skip(event)
-
-    def skip(self, event):
-        ioloop = tornado.ioloop.IOLoop.current()
-        ioloop.add_callback(self.switch_station)
+        self.track = tornado.escape.json_decode(response.body)
+        self.publish(self.QUEUE_ITEM, self.track)
 
     @tornado.gen.coroutine
     def switch_station(self):
-        if self.cookie:
+        if self.is_logged_in:
             path = '/playlist/cloudplayer/40rrim0y7vn725ts'
             response = yield self.fetch(path)
             playlist = tornado.escape.json_decode(response.body)
@@ -152,8 +164,7 @@ class Player(Component):
         self.login_callback = tornado.ioloop.PeriodicCallback(
             self.create_token, 1 * 60 * 1000)
         self.login_callback.start()
-        ioloop = tornado.ioloop.IOLoop.current()
-        ioloop.add_callback(self.create_token)
+        self.add_callback(self.create_token)
 
     @tornado.gen.coroutine
     def create_token(self):
@@ -189,4 +200,5 @@ class Player(Component):
                 if account['title']:
                     title = account['title']
         app_log.info('hello {}'.format(title))
+        self.add_callback(self.switch_station)
         self.publish(self.AUTH_DONE, 'hello\n{}'.format(title))
