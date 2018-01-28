@@ -122,9 +122,13 @@ class Player(Component):
 
     @tornado.gen.coroutine
     def switch_station(self):
-        response = yield self.fetch('/playlist/cloudplayer/40rrim0y7vn725ts')
-        playlist = tornado.escape.json_decode(response.body)
-        self.publish(self.CTRL_NEXT, playlist['items'])
+        if self.cookie:
+            path = '/playlist/cloudplayer/40rrim0y7vn725ts'
+            response = yield self.fetch(path)
+            playlist = tornado.escape.json_decode(response.body)
+            self.publish(self.CTRL_NEXT, playlist['items'])
+        else:
+            app_log.info('not logged in yet')
 
     @tornado.gen.coroutine
     def fetch(self, url, capture_cookies=True, **kw):
@@ -167,7 +171,8 @@ class Player(Component):
 
     @tornado.gen.coroutine
     def check_token(self):
-        response = yield self.fetch('/token/{}'.format(self.token['id']))
+        uri = '/token/{}'.format(self.token['id'])
+        response = yield self.fetch(uri, False)
         self.token = tornado.escape.json_decode(response.body)
         if self.token['claimed']:
             self.token_callback.stop()

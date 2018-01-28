@@ -37,7 +37,6 @@ class Display(Component):
         self.device.display(sized)
 
     def text(self, text, timeout=None):
-        self.draw = None
         image = Image.new(self.device.mode, self.device.size)
         draw = ImageDraw.Draw(image)
         draw.text((0, 0), text, fill='white', align='center', font=self.font)
