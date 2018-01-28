@@ -23,8 +23,14 @@ from cloudplayer.iokit import Component, Potentiometer
 
 class Volume(Potentiometer):
 
+    def __init__(self, *args, **kw):
+        super().__init__(*args, **kw)
+        self.mute = False
+
     def toggle_mute(self, event):
-        self.publish(Potentiometer.VALUE_CHANGED, event.value * self.value)
+        if event.value:
+            self.publish(Potentiometer.VALUE_CHANGED, self.mute * self.value)
+            self.mute = not self.mute
 
 
 class Display(BaseDisplay):
