@@ -3,7 +3,7 @@ import {PlayQueue} from '../../../player/collections/play-queue';
 import {PlayQueueItem} from '../../../player/models/play-queue-item';
 import {IMessage, MessageMethodTypes} from '../../../shared/services/message.service';
 import {WindowMessagesService} from '../../../shared/services/window-messages.service';
-import {SocketMessagesService} from '../../../shared/services/socket-messages.service';
+import {ISocketEvent, SocketMessagesService, SocketStatusTypes} from '../../../shared/services/socket-messages.service';
 import {PlayQueueItemStatus} from '../../../player/src/playqueue-item-status.enum';
 
 @Component({
@@ -14,6 +14,7 @@ import {PlayQueueItemStatus} from '../../../player/src/playqueue-item-status.enu
 })
 
 export class MainComponent implements OnInit, AfterViewInit {
+  private _socketReconnectTimer;
   public noise = 0;
   public volume = 100;
   public playQueue: PlayQueue<PlayQueueItem>;
@@ -22,6 +23,11 @@ export class MainComponent implements OnInit, AfterViewInit {
   public playerVolume = 100;
   public noiseVolume = 0;
   public showPlayer = false;
+  public socketIsOpen = false;
+  public socketUrl = 'localhost:8050/websocket';
+  public socketRetryWait = 3000;
+  public socketRetryProgress = 3000;
+  public socketStatus;
 
   constructor(private windowMessagesService: WindowMessagesService, private socketMessagesService: SocketMessagesService) {
     this.playQueue = new PlayQueue();
@@ -112,13 +118,36 @@ export class MainComponent implements OnInit, AfterViewInit {
     }
   }
 
+  private reconnect() {
+    this.socketStatus = 'SOCKET_OPEN_RETRY';
+    this._socketReconnectTimer = setInterval(() => {
+      if (this.socketRetryProgress > 0) {
+        this.socketRetryProgress -= 1000;
+      } else {
+        this.stopRetry();
+        this.openSocket();
+      }
+    }, 1000);
+  }
+
+  public openSocket() {
+    this.socketStatus = 'SOCKET_TRY_OPEN';
+    this.socketIsOpen = false;
+    this.socketMessagesService.open(`ws://${this.socketUrl}`);
+  }
+
+  public stopRetry() {
+    this.socketStatus = 'SOCKET_WAITING';
+    this.socketRetryProgress = this.socketRetryWait;
+    clearInterval(this._socketReconnectTimer);
+  }
+
   ngOnInit(): void {
     this.windowMessagesService.subscribe('queue', MessageMethodTypes.PUT, this.onQueueChange.bind(this));
     this.windowMessagesService.subscribe('playerState', MessageMethodTypes.PUT, this.onPlayerStateChange.bind(this));
     this.windowMessagesService.subscribe('volume', MessageMethodTypes.PUT, this.onVolumeChange.bind(this));
     this.windowMessagesService.subscribe('noise', MessageMethodTypes.PUT, this.onNoiseChange.bind(this));
 
-    this.socketMessagesService.init('ws://192.168.2.134:8050/websocket');
     this.socketMessagesService.subscribe('queue', MessageMethodTypes.PUT, this.onQueueChange.bind(this));
     this.socketMessagesService.subscribe('playerState', MessageMethodTypes.PUT, this.onPlayerStateChange.bind(this));
     this.socketMessagesService.subscribe('volume', MessageMethodTypes.PUT, this.onVolumeChange.bind(this));
@@ -136,6 +165,25 @@ export class MainComponent implements OnInit, AfterViewInit {
         this.stopLoading();
       }
     });
+
+    this.openSocket();
+
+    this.socketMessagesService.getObservable()
+      .filter((socketEvent: ISocketEvent) => {
+        return socketEvent.type === SocketStatusTypes.CLOSED;
+      })
+      .subscribe(() => {
+        this.socketStatus = 'SOCKET_CLOSED';
+        this.reconnect();
+      });
+
+    this.socketMessagesService.getObservable()
+      .filter((socketEvent: ISocketEvent) => {
+        return socketEvent.type === SocketStatusTypes.OPEN;
+      })
+      .subscribe(() => {
+        this.socketStatus = 'SOCKET_OPEN';
+      });
   }
 
   ngAfterViewInit(): void {

@@ -1,3 +1,14 @@
+<label [ngClass]="{'open': socketStatus==='SOCKET_OPEN'}">
+  Socket Url
+  ws://<input type="url" [(ngModel)]="socketUrl" (ngModelChange)="stopRetry()">
+  <button *ngIf="socketStatus==='SOCKET_WAITING'"
+          (click)="openSocket()">Connect</button>
+  <button *ngIf="socketStatus==='SOCKET_OPEN_RETRY'"
+          (click)="stopRetry()">Stop Retry</button>
+  {{socketStatus}}
+  <span *ngIf="socketStatus==='SOCKET_OPEN_RETRY'">(in {{socketRetryProgress/1000}}s)</span>
+</label>
+<hr>
 <div>
   <app-player-manager
     [playQueue]="playQueue"
@@ -10,7 +21,6 @@
     hidden>
   </app-player-manager>
 </div>
-<hr>
 <div>
   <label>
     Show Player
