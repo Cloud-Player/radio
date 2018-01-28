@@ -16,10 +16,12 @@ from cloudplayer.iokit.component import Component
 
 class Handler(tornado.websocket.WebSocketHandler):
 
-    def __init__(self, request, application, on_open=None, on_close=None):
+    def __init__(self, request, application,
+                 on_open=None, on_message=None, on_close=None):
         super().__init__(request, application)
-        self.on_open = on_open
-        self.on_close = on_close
+        self.open_callback = on_open
+        self.message_callback = on_message
+        self.close_callback = on_close
 
     def set_default_headers(self):
         headers = [
@@ -37,10 +39,14 @@ class Handler(tornado.websocket.WebSocketHandler):
             self.set_header(header, value)
 
     def open(self):
-        self.on_open(self.ws_connection)
+        self.open_callback(self.ws_connection)
+
+    def on_message(self, message):
+        message = tornado.escape.json_decode(message)
+        self.message_callback(message)
 
     def on_close(self):
-        self.on_close()
+        self.close_callback()
 
     def check_origin(self, origin):
         return origin in opt.options['allowed_origins']
@@ -61,6 +67,7 @@ class Server(Component):
 
     SOCKET_OPENED = 'SOCKET_OPENED'
     SOCKET_CLOSED = 'SOCKET_CLOSED'
+    SOCKET_MESSAGE = 'SOCKET_MESSAGE'
 
     def __init__(self):
         super().__init__()
@@ -68,7 +75,9 @@ class Server(Component):
         self.ws_connection = None
         self.app = tornado.web.Application([
             (r'^/websocket', Handler,
-             {'on_open': self.on_open, 'on_close': self.on_close}),
+             {'on_open': self.on_open,
+              'on_message': self.on_message,
+              'on_close': self.on_close}),
         ], **opt.options.group_dict('server'))
         self.app.listen(opt.options.port)
 
@@ -79,6 +88,9 @@ class Server(Component):
             super().subscribe(action, subscriber)
             app_log.info('sub {} {}'.format(action, subscriber))
         self.publish(self.SOCKET_OPENED)
+
+    def on_message(self, message):
+        self.publish(self.SOCKET_MESSAGE, message)
 
     def on_close(self):
         app_log.info('socket close')
