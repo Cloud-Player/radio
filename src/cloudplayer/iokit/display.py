@@ -5,8 +5,11 @@
     :copyright: (c) 2018 by the cloudplayer team
     :license: Apache-2.0, see LICENSE for details
 """
+import functools
+
 from PIL import ImageFont, ImageDraw, Image
 from luma.core.render import canvas
+import tornado.ioloop
 
 from cloudplayer.iokit.component import Component
 
@@ -21,6 +24,7 @@ class Display(Component):
         self.font = ImageFont.truetype(
             self.FONT_FILE, self.FONT_SIZE, 0, 'unic')
         self.device = device
+        self.runner = None
         self.frame = None
 
     def draw(self, image, key_frame=True):
@@ -40,4 +44,10 @@ class Display(Component):
         image = Image.new(self.device.mode, self.device.size)
         draw = ImageDraw.Draw(image)
         draw.text((0, 0), text, fill='white', align='center', font=self.font)
-        self.draw(image, not timeout)
+        self.draw(image, False)
+        if timeout:
+            ioloop = tornado.ioloop.IOLoop.current()
+            if self.runner:
+                ioloop.remove_timeout(self.runner)
+            func = functools.partial(self.draw, self.frame)
+            self.runner = ioloop.call_later(timeout / 1000.0, func)

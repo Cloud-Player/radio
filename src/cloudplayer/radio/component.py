@@ -36,7 +36,7 @@ class Volume(Potentiometer):
 class Display(BaseDisplay):
 
     def show_volume(self, event):
-        self.text('volume\n{}%'.format(int(event.value * 100)))
+        self.text('volume\n{}%'.format(int(event.value * 100)), 500)
 
     def show_token(self, event):
         self.text('token\n{}'.format(event.value['id']))
