@@ -7,6 +7,8 @@
 """
 import uuid
 
+import tornado.ioloop
+
 from cloudplayer.iokit.event import Event, EventManager
 
 
@@ -28,3 +30,7 @@ class Component(object):
 
     def unsubscribe(self, action, subscriber):
         EventManager.remove_subscription(action, self, subscriber)
+
+    def add_callback(self, callback):
+        ioloop = tornado.ioloop.IOLoop.current()
+        ioloop.add_callback(callback)
