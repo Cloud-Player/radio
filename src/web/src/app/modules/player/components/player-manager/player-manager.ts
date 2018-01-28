@@ -83,7 +83,13 @@ export class PlayerManagerComponent implements OnInit, OnChanges {
         break;
       case PlayerStatus.Ended:
         if (this.playQueue.hasNextItem()) {
-          this.playQueue.getNextItem().play();
+          const nextItem = this.playQueue.getNextItem();
+          const currentItem = this.playQueue.getCurrentItem();
+          if (nextItem.id !== currentItem.id) {
+            this.playQueue.getNextItem().play();
+          } else {
+            this.playQueue.getNextItem().restart();
+          }
         } else {
           this.playQueue.getCurrentItem().stop();
         }
