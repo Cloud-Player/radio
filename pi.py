@@ -2,8 +2,8 @@ debug = True
 xheaders = False
 static_path = 'static'
 
-font_file = 'src/cloudplayer/iokit/font/RobotoMono-Regular.ttf'
-cookie_file = 'tok_v1.txt'
+font_file = '/usr/share/fonts/RobotoMono-Regular.ttf'
+cookie_file = '/home/pi/radio/tok_v1.txt'
 
 allowed_origins = [
     'http://localhost:4200',

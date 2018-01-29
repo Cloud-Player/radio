@@ -33,6 +33,9 @@ class Volume(Potentiometer):
             self.publish(Potentiometer.VALUE_CHANGED, self.mute * self.value)
             self.mute = not self.mute
 
+    def echo_volume(self, event):
+        self.publish(Potentiometer.VALUE_CHANGED, self.value)
+
 
 class Frequency(Potentiometer):
 
@@ -142,7 +145,7 @@ class Player(Component):
         self.login_callback = None
         self.token_callback = None
         try:
-            with open('tok_v1.cookie', 'r') as fh:
+            with open(opt.options['cookie_file'], 'r') as fh:
                 self.cookie = fh.read()
             assert self.cookie
         except (AssertionError, IOError):
@@ -204,7 +207,7 @@ class Player(Component):
         new_cookies = ';'.join(c.split(';', 1)[0] for c in cookie_headers)
         if new_cookies and capture_cookies:
             self.cookie = new_cookies
-            with open('tok_v1.cookie', 'w') as fh:
+            with open(opt.options['cookie_file'], 'w') as fh:
                 fh.write(self.cookie)
         return response
 

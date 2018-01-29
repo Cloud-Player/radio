@@ -35,6 +35,8 @@ def define_options():
     opt.define('debug', type=bool, group='server')
     opt.define('xheaders', type=bool, group='server')
     opt.define('static_path', type=str, group='server')
+    opt.define('font_file', type=str, default='RobotoMono.ttf')
+    opt.define('cookie_file', type=str, default='tok_v1.txt')
     opt.define('allowed_origins', type=list, default=['*'])
     opt.define('api_base_url', type=str, default='/')
     opt.parse_config_file(opt.options.config)
@@ -63,26 +65,29 @@ def compose():
 
     server = Server()
     player = Player()
+    mute = Input(13)
+    volume = Volume(5, 6, initial=0.5)
+    frequency = Frequency(27, 17, steps=10.0)
+    skip = Input(26)
 
     server.subscribe(server.SOCKET_OPENED, player.on_open)
     server.subscribe(server.SOCKET_MESSAGE, player.on_message)
+
     player.subscribe(player.AUTH_START, display.show_token)
     player.subscribe(player.QUEUE_CHANGED, server.update_queue)
+    player.subscribe(player.QUEUE_CHANGED, volume.echo_volume)
     player.subscribe(player.QUEUE_ITEM, display.current_track)
+    player.subscribe(player.QUEUE_ITEM, frequency.exit_ether)
 
-    mute = Input(13)
-    volume = Volume(5, 6, initial=0.01)
     mute.subscribe(mute.VALUE_CHANGED, volume.toggle_mute)
+
     volume.subscribe(volume.VALUE_CHANGED, display.show_volume)
     volume.subscribe(volume.VALUE_CHANGED, server.update_volume)
 
-    frequency = Frequency(27, 17, steps=10.0)
-    player.subscribe(player.QUEUE_ITEM, frequency.exit_ether)
     frequency.subscribe(frequency.VALUE_CHANGED, display.filter_image)
     frequency.subscribe(frequency.ENTER_ETHER, player.frequency_changed)
     frequency.subscribe(frequency.VALUE_CHANGED, server.update_noise)
 
-    skip = Input(26)
     skip.subscribe(skip.VALUE_CHANGED, server.skip_track)
 
 
