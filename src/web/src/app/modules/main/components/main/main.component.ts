@@ -192,6 +192,13 @@ export class MainComponent implements OnInit, AfterViewInit {
     clearInterval(this._socketReconnectTimer);
   }
 
+  public getProgress() {
+    const playingItem = this.playQueue.getPlayingItem();
+    if (playingItem) {
+      return Math.round((playingItem.progress / playingItem.duration) * 100);
+    }
+  }
+
   ngOnInit(): void {
     this.playQueue.on('change:status', (item: PlayQueueItem) => {
       if (item.status === PlayQueueItemStatus.RequestedPlaying) {
@@ -232,6 +239,7 @@ export class MainComponent implements OnInit, AfterViewInit {
     this.socketMessagesService.getObservable()
       .filter(socketEvent => socketEvent.type === SocketStatusTypes.OPEN)
       .subscribe(() => {
+        this.stopRetry();
         this.socketStatus = 'SOCKET_OPEN';
       });
 
