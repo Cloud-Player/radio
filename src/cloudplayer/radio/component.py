@@ -6,6 +6,7 @@
     :license: Apache-2.0, see LICENSE for details
 """
 import functools
+import math
 import random
 
 from PIL import Image, ImageFilter
@@ -38,24 +39,43 @@ class Frequency(Potentiometer):
     ENTER_ETHER = 'ENTER_ETHER'
     EXIT_ETHER = 'EXIT_ETHER'
 
+    _STATE_TUNING = 'STATE_TUNING'
+    _STATE_PENDING = '_STATE_PENDING'
+    _STATE_ETHER = '_STATE_ETHER'
+
     def __init__(self, *args, **kw):
         super().__init__(*args, **kw)
-        self.in_ether = False
+        self.state = self._STATE_TUNING
+        self.burn = None
 
     def update_value(self, value):
-        value = max(min(value, 1.0), 0.0)
-        if self.in_ether:
-            if random.random() > 0.75:
-                self.publish(Frequency.ENTER_ETHER, value)
-        elif value == 0.0 or value == 1.0
-            self.in_ether = True
-        elif self.value != value:
+        freq = math.pow(math.sin(value * math.pi), 2)
+        if self.state == self._STATE_TUNING:
+            if freq < 0.05 and self.burn is not None:
+                self.burn = None
+                app_log.info('snap')
+            elif freq > 0.95:
+                if self.burn is None or abs(value - self.burn) > 0.05:
+                    self.state = self._STATE_PENDING
+                    freq = 1.0
+                    self.burn = value
+                    app_log.info('pending + burn %s' % value)
             self.value = value
-            self.publish(Frequency.VALUE_CHANGED, value)
+            self.publish(Frequency.VALUE_CHANGED, freq)
+        elif self.state == self._STATE_PENDING:
+            if random.random() > 0.75:
+                app_log.info('ether says yes')
+                self.publish(Frequency.ENTER_ETHER, value)
+            else:
+                app_log.info('ether says no')
+        elif self.state == self._STATE_ETHER:
+            self.state = self._STATE_TUNING
+            app_log.info('back to tuning')
 
     def exit_ether(self, event):
-        self.in_ether = False
-        self.publish(Frequency.EXIT_ETHER, self.value)
+        if self.state == self._STATE_PENDING:
+            self.state = self._STATE_ETHER
+            app_log.info('exit ether')
 
 
 class Display(BaseDisplay):
