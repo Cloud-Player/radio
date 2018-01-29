@@ -67,7 +67,7 @@ def compose():
     server.subscribe(server.SOCKET_OPENED, player.on_open)
     server.subscribe(server.SOCKET_MESSAGE, player.on_message)
     player.subscribe(player.AUTH_START, display.show_token)
-    player.subscribe(player.CTRL_NEXT, server.update_queue)
+    player.subscribe(player.QUEUE_CHANGED, server.update_queue)
     player.subscribe(player.QUEUE_ITEM, display.current_track)
 
     mute = Input(13)
@@ -76,9 +76,10 @@ def compose():
     volume.subscribe(volume.VALUE_CHANGED, display.show_volume)
     volume.subscribe(volume.VALUE_CHANGED, server.update_volume)
 
-    frequency = Frequency(27, 17, steps=12.0)
+    frequency = Frequency(27, 17, steps=10.0)
+    player.subscribe(player.QUEUE_ITEM, frequency.exit_ether)
     frequency.subscribe(frequency.VALUE_CHANGED, display.filter_image)
-    frequency.subscribe(frequency.VALUE_CHANGED, player.frequency_changed)
+    frequency.subscribe(frequency.ENTER_ETHER, player.frequency_changed)
     frequency.subscribe(frequency.VALUE_CHANGED, server.update_noise)
 
     skip = Input(26)
