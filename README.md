@@ -7,7 +7,7 @@ by Nicolas Drebenstedt and Alexander Zarges
 
 ## abstract
 
-In 2017 music streaming is ubiquitous and consumers can access millions of songs and artists.
+In 2018 music streaming is ubiquitous and consumers can access millions of songs and artists.
 But having so many choices, often leaves us undecided what to listen to. Recommendation engines try to solve this problem but tend to push people into a filter bubble.
 Looking back a century, broadcast radio has always provided a variety of music to listen to, curated by humans – not AI.
 We want to combine the unlimited choices of streaming music services with the charm of hand-picked music stations. With cloud-radio everyone can be radio host and broadcast to the world.
