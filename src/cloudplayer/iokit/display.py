@@ -49,7 +49,7 @@ class Display(Component):
     def text(self, text, timeout=None):
         image = Image.new(self.device.mode, self.device.size)
         draw = ImageDraw.Draw(image)
-        draw.text((0, 0), text, fill='white', align='center', font=self.font)
+        draw.text((5, 35), text, fill='white', align='center', font=self.font)
         self.draw(image, frame=False)
         if timeout:
             ioloop = tornado.ioloop.IOLoop.current()
