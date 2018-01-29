@@ -1,10 +1,51 @@
 import {AfterViewInit, Component, OnInit, ViewEncapsulation} from '@angular/core';
 import {PlayQueue} from '../../../player/collections/play-queue';
 import {PlayQueueItem} from '../../../player/models/play-queue-item';
-import {IMessage, MessageMethodTypes} from '../../../shared/services/message.service';
-import {WindowMessagesService} from '../../../shared/services/window-messages.service';
+import {IMessage, MessageMethodTypes, MessageTypes} from '../../../shared/services/message.service';
+import {
+  IWindowMessageEvent, WindowMessagesService,
+  WindowMessageStatusTypes
+} from '../../../shared/services/window-messages.service';
 import {ISocketEvent, SocketMessagesService, SocketStatusTypes} from '../../../shared/services/socket-messages.service';
 import {PlayQueueItemStatus} from '../../../player/src/playqueue-item-status.enum';
+import {BaseCollection} from '../../../backbone/collections/base.collection';
+import {BaseModel} from '../../../backbone/models/base.model';
+import {attributesKey} from '../../../backbone/decorators/attributes-key.decorator';
+
+enum MessageDirection {
+  IN = 'IN',
+  OUT = 'OUT'
+}
+
+class Message extends BaseModel {
+  @attributesKey('timestamp')
+  timestamp: Date;
+
+  @attributesKey('direction')
+  direction: MessageDirection;
+
+  @attributesKey('message')
+  message: string;
+
+  @attributesKey('type')
+  type: MessageTypes;
+
+  public isOutgoing() {
+    return this.direction === MessageDirection.OUT;
+  }
+
+  public isIncoming() {
+    return this.direction === MessageDirection.IN;
+  }
+
+  initialize() {
+    this.timestamp = new Date();
+  }
+}
+
+class Messages<TModel extends Message> extends BaseCollection<BaseModel> {
+  model = Message;
+}
 
 @Component({
   selector: 'app-cloud-radio',
@@ -12,11 +53,10 @@ import {PlayQueueItemStatus} from '../../../player/src/playqueue-item-status.enu
   styleUrls: ['./main.style.scss'],
   encapsulation: ViewEncapsulation.None
 })
-
 export class MainComponent implements OnInit, AfterViewInit {
   private _socketReconnectTimer;
   public noise = 0;
-  public volume = 100;
+  public volume = 0;
   public playQueue: PlayQueue<PlayQueueItem>;
   public noiseQueue: PlayQueue<PlayQueueItem>;
   public isLoading = false;
@@ -28,6 +68,7 @@ export class MainComponent implements OnInit, AfterViewInit {
   public socketRetryWait = 3000;
   public socketRetryProgress = 3000;
   public socketStatus;
+  public messages: Messages<Message>;
 
   constructor(private windowMessagesService: WindowMessagesService, private socketMessagesService: SocketMessagesService) {
     this.playQueue = new PlayQueue();
@@ -35,6 +76,7 @@ export class MainComponent implements OnInit, AfterViewInit {
     this.noiseQueue.add({
       track: {id: 28907786, provider: 'soundcloud'}
     });
+    this.messages = new Messages();
   }
 
   private onQueueChange(queue) {
@@ -130,6 +172,14 @@ export class MainComponent implements OnInit, AfterViewInit {
     }, 1000);
   }
 
+  private logMessage(direction: MessageDirection, type: MessageTypes, message: IMessage) {
+    const logMessage = new Message();
+    logMessage.direction = direction;
+    logMessage.type = type;
+    logMessage.message = JSON.stringify(message, null, 4);
+    this.messages.add(logMessage, {at:0});
+  }
+
   public openSocket() {
     this.socketStatus = 'SOCKET_TRY_OPEN';
     this.socketIsOpen = false;
@@ -143,16 +193,6 @@ export class MainComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    this.windowMessagesService.subscribe('queue', MessageMethodTypes.PUT, this.onQueueChange.bind(this));
-    this.windowMessagesService.subscribe('playerState', MessageMethodTypes.PUT, this.onPlayerStateChange.bind(this));
-    this.windowMessagesService.subscribe('volume', MessageMethodTypes.PUT, this.onVolumeChange.bind(this));
-    this.windowMessagesService.subscribe('noise', MessageMethodTypes.PUT, this.onNoiseChange.bind(this));
-
-    this.socketMessagesService.subscribe('queue', MessageMethodTypes.PUT, this.onQueueChange.bind(this));
-    this.socketMessagesService.subscribe('playerState', MessageMethodTypes.PUT, this.onPlayerStateChange.bind(this));
-    this.socketMessagesService.subscribe('volume', MessageMethodTypes.PUT, this.onVolumeChange.bind(this));
-    this.socketMessagesService.subscribe('noise', MessageMethodTypes.PUT, this.onNoiseChange.bind(this));
-
     this.playQueue.on('change:status', (item: PlayQueueItem) => {
       if (item.status === PlayQueueItemStatus.RequestedPlaying) {
         this.startLoading();
@@ -166,27 +206,72 @@ export class MainComponent implements OnInit, AfterViewInit {
       }
     });
 
-    this.openSocket();
+    this.windowMessagesService.subscribe('queue', MessageMethodTypes.PUT, this.onQueueChange.bind(this));
+    this.windowMessagesService.subscribe('playerState', MessageMethodTypes.PUT, this.onPlayerStateChange.bind(this));
+    this.windowMessagesService.subscribe('volume', MessageMethodTypes.PUT, this.onVolumeChange.bind(this));
+    this.windowMessagesService.subscribe('noise', MessageMethodTypes.PUT, this.onNoiseChange.bind(this));
+
+    this.windowMessagesService.getObservable()
+      .filter(socketEvent => socketEvent.type === WindowMessageStatusTypes.MESSAGE)
+      .subscribe((socketEvent: IWindowMessageEvent) => {
+        this.logMessage(MessageDirection.IN, MessageTypes.WINDOW_MESSAGE, socketEvent.detail);
+      });
+
+    this.socketMessagesService.subscribe('queue', MessageMethodTypes.PUT, this.onQueueChange.bind(this));
+    this.socketMessagesService.subscribe('playerState', MessageMethodTypes.PUT, this.onPlayerStateChange.bind(this));
+    this.socketMessagesService.subscribe('volume', MessageMethodTypes.PUT, this.onVolumeChange.bind(this));
+    this.socketMessagesService.subscribe('noise', MessageMethodTypes.PUT, this.onNoiseChange.bind(this));
 
     this.socketMessagesService.getObservable()
-      .filter((socketEvent: ISocketEvent) => {
-        return socketEvent.type === SocketStatusTypes.CLOSED;
-      })
+      .filter(socketEvent => socketEvent.type === SocketStatusTypes.CLOSED)
       .subscribe(() => {
         this.socketStatus = 'SOCKET_CLOSED';
         this.reconnect();
       });
 
     this.socketMessagesService.getObservable()
-      .filter((socketEvent: ISocketEvent) => {
-        return socketEvent.type === SocketStatusTypes.OPEN;
-      })
+      .filter(socketEvent => socketEvent.type === SocketStatusTypes.OPEN)
       .subscribe(() => {
         this.socketStatus = 'SOCKET_OPEN';
       });
+
+    this.socketMessagesService.getObservable()
+      .filter(socketEvent => socketEvent.type === SocketStatusTypes.MESSAGE)
+      .subscribe((socketEvent: ISocketEvent) => {
+        this.logMessage(MessageDirection.IN, MessageTypes.SOCKET, socketEvent.detail);
+      });
+
+    this.socketMessagesService.getObservable()
+      .filter(socketEvent => socketEvent.type === SocketStatusTypes.SEND_MESSAGE)
+      .subscribe((socketEvent: ISocketEvent) => {
+        this.logMessage(MessageDirection.OUT, MessageTypes.SOCKET, socketEvent.detail);
+      });
+
+    this.openSocket();
   }
 
   ngAfterViewInit(): void {
     this.noiseQueue.first().play();
+
+    const ev = new CustomEvent(
+      'appMessage',
+      {
+        detail: {
+          channel: 'queue',
+          method: 'PUT',
+          body: [
+            {track_id: 154258944, track_provider_id: 'soundcloud'},
+            {track_id: 6469900, track_provider_id: 'soundcloud'},
+            {track_id: 162998530, track_provider_id: 'soundcloud'},
+            {track_id: 4323319, track_provider_id: 'soundcloud'},
+            {track_id: 'KfCcTDz5YiU', track_provider_id: 'youtube'},
+            {track_id: 'gra4ugWIzLE', track_provider_id: 'youtube'},
+            {track_id: 'lAwYodrBr2Q', track_provider_id: 'youtube'},
+          ]
+        }
+      }
+    );
+
+    window.dispatchEvent(ev);
   }
 }

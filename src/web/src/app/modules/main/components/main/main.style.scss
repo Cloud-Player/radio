@@ -1,9 +1,34 @@
-app-player-manager{
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+app-player-manager {
   height: 200px;
   width: 200px;
 }
 
-.open{
+.open {
   background: #15ff15;
   padding: 9px;
+}
+
+.ui {
+  display: flex;
+  height: calc(100vh - 20px);
+  overflow: scroll;
+  padding: 10px;
+
+  .player {
+    flex-grow: 1;
+    height: 100%;
+  }
+
+  .log {
+    width: 30vw;
+    height: 100%;
+    background: #efefef;
+    overflow: scroll;
+    margin-left: 20px;
+  }
 }
