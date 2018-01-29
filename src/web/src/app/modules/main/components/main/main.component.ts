@@ -232,6 +232,7 @@ export class MainComponent implements OnInit, AfterViewInit {
     this.socketMessagesService.getObservable()
       .filter(socketEvent => socketEvent.type === SocketStatusTypes.OPEN)
       .subscribe(() => {
+        this.stopRetry();
         this.socketStatus = 'SOCKET_OPEN';
       });
 
