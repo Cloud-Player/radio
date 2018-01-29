@@ -1,0 +1,13 @@
+<div class="message-logger">
+  <ul>
+    <li *ngFor="let logMessage of messages.models">
+      <span *ngIf="logMessage.isIncoming()">-->IN</span>
+      <span *ngIf="logMessage.isOutgoing()"><--OUT</span>
+      {{logMessage.type}}
+      {{logMessage.timestamp}}
+      <pre>
+          {{logMessage.message}}
+        </pre>
+    </li>
+  </ul>
+</div>

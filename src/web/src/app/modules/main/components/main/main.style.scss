@@ -3,47 +3,18 @@ html, body {
   padding: 0;
 }
 
-.open {
-  background: #15ff15;
-  padding: 9px;
-}
-
 .ui {
   display: flex;
   height: calc(100vh - 20px);
   overflow: scroll;
   padding: 10px;
 
-  .player {
-    flex-grow: 1;
-    max-height: 320px;
-
-    .player-holder{
-      height: inherit;
-      display: flex;
-
-      .players{
-        min-width: 320px;
-        max-width: 320px;
-        margin-right: 20px;
-        app-player-manager {
-          height: 320px;
-          width: 320px;
-        }
-      }
-    }
-
-    .playqueue{
-      height: 100%;
-      overflow: scroll;
-    }
+  app-radio {
+    width: 70vw;
+    display: block;
   }
 
-  .log {
+  app-message-logger {
     width: 30vw;
-    height: 100%;
-    background: #efefef;
-    overflow: scroll;
-    margin-left: 20px;
   }
 }

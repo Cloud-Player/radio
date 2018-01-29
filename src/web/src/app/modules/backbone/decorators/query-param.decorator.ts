@@ -5,7 +5,6 @@ import {IDynamicInstanceDefinition, IDynamicInstances} from '../utils/interfaces
 export function queryParam(): any {
   return function (target: any, propertyKey: any, value: any): void {
     const dynamicQueryParams: any = result(target, 'dynamicQueryParams') || {};
-    console.log(arguments, target[propertyKey]);
     Object.defineProperty(target, 'dynamicQueryParams', {
       get: function () {
         dynamicQueryParams[propertyKey] = value || propertyKey;

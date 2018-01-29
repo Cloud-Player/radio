@@ -1,0 +1,14 @@
+<div class="socket-opener" [ngClass]="{'open': socketStatus==='SOCKET_OPEN'}">
+  <label>
+    Socket Url
+    ws://<input type="url" [(ngModel)]="socketUrl" (ngModelChange)="stopRetry()">
+  </label>
+  <button *ngIf="socketStatus==='SOCKET_WAITING'"
+          (click)="openSocket()">Connect
+  </button>
+  <button *ngIf="socketStatus==='SOCKET_OPEN_RETRY'"
+          (click)="stopRetry()">Stop Retry
+  </button>
+  {{socketStatus}}
+  <span *ngIf="socketStatus==='SOCKET_OPEN_RETRY'">(in {{socketRetryProgress/1000}}s)</span>
+</div>
