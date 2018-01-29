@@ -7,7 +7,8 @@ export enum SocketStatusTypes {
   OPEN = 'OPEN',
   MESSAGE = 'MESSAGE',
   CLOSED = 'CLOSED',
-  ERROR = 'ERROR'
+  ERROR = 'ERROR',
+  SEND_MESSAGE = 'SEND_MESSAGE'
 }
 
 export interface ISocketEvent {
@@ -75,6 +76,10 @@ export class SocketMessagesService {
     if (this._isOpened) {
       const message: IMessage = {channel: channelId, method: method, body: body};
       this._socket.send(JSON.stringify(message));
+      this._observable.emit({
+        type: SocketStatusTypes.SEND_MESSAGE,
+        detail: message
+      });
     }
   }
 
