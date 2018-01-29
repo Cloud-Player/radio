@@ -29,7 +29,7 @@ class Input(Channel):
 
     def __init__(self, channel):
         super().__init__(channel, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        GPIO.add_event_detect(channel, GPIO.BOTH, self.callback)
+        GPIO.add_event_detect(channel, GPIO.BOTH, self.callback, 24)
 
     def __del__(self):
         GPIO.remove_event_detect(self.channel)

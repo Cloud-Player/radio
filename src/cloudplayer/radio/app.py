@@ -17,9 +17,10 @@ import tornado.ioloop
 import tornado.options as opt
 import tornado.web
 
-from cloudplayer.iokit import Input, Potentiometer, RotaryEncoder
+from cloudplayer.iokit import Input
 from cloudplayer.iokit import GPIO, EventManager
-from cloudplayer.radio.component import Display, Server, Player, Volume
+from cloudplayer.radio.component import Display, Server, Player
+from cloudplayer.radio.component import Volume, Frequency
 
 
 def define_options():
@@ -27,8 +28,9 @@ def define_options():
     opt.define('config', type=str, default='dev.py')
     opt.define('port', type=int, default=8050)
     opt.parse_command_line()
-    opt.define('connect_timeout', type=int, default=1, group='httpclient')
-    opt.define('request_timeout', type=int, default=3, group='httpclient')
+    opt.define('connect_timeout', type=int, default=5, group='httpclient')
+    opt.define('request_timeout', type=int, default=10, group='httpclient')
+    opt.define('validate_cert', type=bool, default=False, group='httpclient')
     opt.define('max_redirects', type=int, default=1, group='httpclient')
     opt.define('debug', type=bool, group='server')
     opt.define('xheaders', type=bool, group='server')
@@ -66,20 +68,21 @@ def compose():
     server.subscribe(server.SOCKET_MESSAGE, player.on_message)
     player.subscribe(player.AUTH_START, display.show_token)
     player.subscribe(player.CTRL_NEXT, server.update_queue)
-    player.subscribe(player.QUEUE_ITEM, display.now_playing)
+    player.subscribe(player.QUEUE_ITEM, display.current_track)
 
     mute = Input(13)
-    volume = Volume(5, 6)
+    volume = Volume(5, 6, initial=0.1)
     mute.subscribe(mute.VALUE_CHANGED, volume.toggle_mute)
     volume.subscribe(volume.VALUE_CHANGED, display.show_volume)
     volume.subscribe(volume.VALUE_CHANGED, server.update_volume)
 
-    frequency = Potentiometer(27, 17)
-    frequency.subscribe(frequency.VALUE_CHANGED, display.pixelate)
+    frequency = Frequency(27, 17, steps=10.0)
+    frequency.subscribe(frequency.VALUE_CHANGED, display.filter_image)
     frequency.subscribe(frequency.VALUE_CHANGED, player.frequency_changed)
     frequency.subscribe(frequency.VALUE_CHANGED, server.update_noise)
 
     skip = Input(26)
+    skip.subscribe(skip.VALUE_CHANGED, server.skip_track)
 
 
 def teardown(*_):

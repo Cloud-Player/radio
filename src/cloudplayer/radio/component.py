@@ -6,9 +6,10 @@
     :license: Apache-2.0, see LICENSE for details
 """
 import functools
+import math
 import random
 
-from PIL import Image
+from PIL import Image, ImageFilter
 from tornado.log import app_log
 import tornado.escape
 import tornado.gen
@@ -33,35 +34,38 @@ class Volume(Potentiometer):
             self.mute = not self.mute
 
 
+class Frequency(Potentiometer):
+
+    def update_value(self, value):
+        value = 1.0 - (max(math.cos(x), 0.0))
+        super().update_value(value)
+
+
 class Display(BaseDisplay):
 
+    def __init__(self, device):
+        super().__init__(device)
+        self.filter = ImageFilter.ModeFilter(0)
+
     def show_volume(self, event):
-        self.text('volume\n{}%'.format(int(event.value * 100)))
+        self.text('volume\n{}%'.format(int(event.value * 100)), 500)
 
     def show_token(self, event):
         self.text('token\n{}'.format(event.value['id']))
 
-    def pixelate(self, event):
-        width = int(self.device.width / 16)
-        height = int(self.device.height / 16)
-        image = self.frame.copy()
-        for _ in range(5):
-            sx, tx = random.sample(range(self.device.width - 16), 2)
-            sy, ty = random.sample(range(self.device.height - 16), 2)
-            color = self.frame.getpixel((sx, sy))
-            image.paste(color, (tx, ty, tx + 16, ty + 16))
-        self.draw(image)
+    def filter_image(self, event):
+        self.filter = ImageFilter.ModeFilter(int(event.value * 10.0))
+        self.draw(self.key_frame)
 
-    def now_playing(self, event):
+    def current_track(self, event):
         http_client = tornado.httpclient.HTTPClient()
         image = event.value.get('image')
         if not image:
             image = event.value['account'].get('image')
             if not image:
                 return
-        response = http_client.fetch(image['small'])
-        image = Image.open(response.buffer)
-        self.draw(image)
+        response = http_client.fetch(image['medium'])
+        self.draw(Image.open(response.buffer), key_frame=True)
 
 
 class Server(BaseServer):
@@ -79,6 +83,10 @@ class Server(BaseServer):
 
     def update_queue(self, event):
         self.write(queue=event.value)
+
+    def skip_track(self, event):
+        if event.value:
+            self.write(playerState='next')
 
 
 class Player(Component):
@@ -127,7 +135,8 @@ class Player(Component):
             self.add_callback(func)
 
     def frequency_changed(self, event):
-        if event.value == 100:
+        if event.value == 1.0 and self.track:
+            self.track = None
             self.add_callback(self.switch_station)
 
     @tornado.gen.coroutine
@@ -140,8 +149,7 @@ class Player(Component):
     @tornado.gen.coroutine
     def switch_station(self):
         if self.is_logged_in:
-            path = '/playlist/cloudplayer/40rrim0y7vn725ts'
-            response = yield self.fetch(path)
+            response = yield self.fetch('/playlist/cloudplayer/random')
             playlist = tornado.escape.json_decode(response.body)
             self.publish(self.CTRL_NEXT, playlist['items'])
         else:
@@ -154,8 +162,7 @@ class Player(Component):
         if self.cookie:
             headers['Cookie'] = self.cookie
 
-        response = yield self.http_client.fetch(
-            url, headers=headers, validate_cert=False, **kw)
+        response = yield self.http_client.fetch(url, headers=headers, **kw)
 
         cookie_headers = response.headers.get_list('Set-Cookie')
         new_cookies = ';'.join(c.split(';', 1)[0] for c in cookie_headers)
