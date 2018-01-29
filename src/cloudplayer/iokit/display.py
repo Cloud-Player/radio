@@ -10,6 +10,7 @@ import functools
 from PIL import ImageFont, ImageDraw, Image
 from luma.core.render import canvas
 import tornado.ioloop
+import tornado.options as opt
 
 from cloudplayer.iokit.component import Component
 
@@ -17,12 +18,11 @@ from cloudplayer.iokit.component import Component
 class Display(Component):
 
     FONT_SIZE = 20
-    FONT_FILE = 'src/cloudplayer/iokit/font/RobotoMono-Regular.ttf'
 
     def __init__(self, device):
         super().__init__()
         self.font = ImageFont.truetype(
-            self.FONT_FILE, self.FONT_SIZE, 0, 'unic')
+            opt.options['font_file'], self.FONT_SIZE, 0, 'unic')
         self.device = device
         self.runner = None
         self.frame = Image.new(device.mode, device.size)

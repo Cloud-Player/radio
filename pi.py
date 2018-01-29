@@ -2,7 +2,7 @@ debug = True
 xheaders = False
 static_path = 'static'
 
-font_file = 'src/cloudplayer/iokit/font/RobotoMono-Regular.ttf'
+font_file = '/usr/share/fonts/RobotoMono-Regular.ttf'
 
 allowed_origins = [
     'http://localhost:4200',

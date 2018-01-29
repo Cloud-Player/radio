@@ -35,6 +35,7 @@ def define_options():
     opt.define('debug', type=bool, group='server')
     opt.define('xheaders', type=bool, group='server')
     opt.define('static_path', type=str, group='server')
+    opt.define('font_file', type=str, default='RobotoMono.ttf')
     opt.define('allowed_origins', type=list, default=['*'])
     opt.define('api_base_url', type=str, default='/')
     opt.parse_config_file(opt.options.config)
