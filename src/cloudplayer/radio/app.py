@@ -64,16 +64,16 @@ def compose():
     server = Server()
     player = Player()
     mute = Input(13)
-    volume = Volume(5, 6, initial=0.1)
+    volume = Volume(5, 6, initial=0.5)
     frequency = Frequency(27, 17, steps=10.0)
     skip = Input(26)
 
     server.subscribe(server.SOCKET_OPENED, player.on_open)
-    server.subscribe(server.SOCKET_OPENED, volume.echo_volume)
     server.subscribe(server.SOCKET_MESSAGE, player.on_message)
 
     player.subscribe(player.AUTH_START, display.show_token)
     player.subscribe(player.QUEUE_CHANGED, server.update_queue)
+    player.subscribe(server.QUEUE_CHANGED, volume.echo_volume)
     player.subscribe(player.QUEUE_ITEM, display.current_track)
     player.subscribe(player.QUEUE_ITEM, frequency.exit_ether)
 
