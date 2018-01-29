@@ -10,6 +10,9 @@ import {PlayerModule} from '../player/player.module';
 import {UserAnalyticsModule} from '../user-analytics/user-analytics.module';
 import {MainRoutingModule} from './main.routes';
 import {SocketMockControlsComponent} from './components/socket-mock-controls/socket-mock-controls';
+import {SocketOpenerComponent} from './components/socket-opener/socket-opener';
+import {RadioComponent} from './components/radio/radio';
+import {MessageLoggerComponent} from './components/message-logger/message-logger';
 
 @NgModule({
   imports: [
@@ -23,7 +26,10 @@ import {SocketMockControlsComponent} from './components/socket-mock-controls/soc
   ],
   declarations: [
     MainComponent,
-    SocketMockControlsComponent
+    RadioComponent,
+    SocketMockControlsComponent,
+    SocketOpenerComponent,
+    MessageLoggerComponent
   ],
   providers: [{provide: LocationStrategy, useClass: HashLocationStrategy}],
   bootstrap: [MainComponent]

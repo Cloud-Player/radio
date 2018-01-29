@@ -1,7 +1,7 @@
-import {AfterViewInit, Component, Input, OnInit, ViewEncapsulation} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {PlayQueue} from '../../../player/collections/play-queue';
 import {PlayQueueItem} from '../../../player/models/play-queue-item';
-import {IMessage, MessageMethodTypes} from '../../../shared/services/message.service';
+import {MessageMethodTypes} from '../../../shared/services/message.service';
 import {WindowMessagesService} from '../../../shared/services/window-messages.service';
 
 @Component({
@@ -12,15 +12,11 @@ import {WindowMessagesService} from '../../../shared/services/window-messages.se
 export class SocketMockControlsComponent {
   public isPlaying = false;
   public queue: string;
+  public volume = 100;
+  public noise = 0;
 
   @Input()
   public isLoading = false;
-
-  @Input()
-  public volume = 100;
-
-  @Input()
-  public noise = 0;
 
   @Input()
   public playQueue: PlayQueue<PlayQueueItem>;

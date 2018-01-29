@@ -1,0 +1,28 @@
+<div class="radio">
+  <div class="players" [hidden]="!showPlayer">
+    <app-player-manager
+      [playQueue]="playQueue"
+      [volume]="playerVolume">
+    </app-player-manager>
+    <app-player-manager
+      [playQueue]="noiseQueue"
+      [volume]="noiseVolume"
+      hidden>
+    </app-player-manager>
+  </div>
+  <div class="playqueue">
+    <b>Playqueue</b>
+    <ul *ngIf="playQueue.length>0">
+      <li *ngFor="let item of playQueue.models">
+        <span *ngIf="item.isPlaying()">▶</span>
+        {{item.track.id}}
+        <span *ngIf="item.track.title">- {{item.track.title}}</span>
+        - {{item.track.provider}}
+        <span *ngIf="item.duration && item.progress">{{getProgress()}}%</span>
+      </li>
+    </ul>
+    <ul *ngIf="playQueue.length===0">
+      <li>No items are in the playqueue</li>
+    </ul>
+  </div>
+</div>
