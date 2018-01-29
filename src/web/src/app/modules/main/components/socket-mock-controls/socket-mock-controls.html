@@ -22,19 +22,4 @@
   Noise:
   <input type="range" [(ngModel)]="noise" (ngModelChange)="setNoise(noise)" [min]="0" [max]="100">
 </label>
-<hr>
-<h4>Playqueue</h4>
-<ul *ngIf="playQueue.length>0">
-  <li *ngFor="let item of playQueue.models">
-    <span *ngIf="item.isPlaying()">▶</span>
-    {{item.track.id}}
-    <span *ngIf="item.track.title">
-      - {{item.track.title}}
-    </span>
-    - {{item.track.provider}}
-    <span *ngIf="item.duration && item.progress">{{item.progress/item.duration}}%</span>
-  </li>
-</ul>
-<div *ngIf="playQueue.length===0">
-  No items are in the playqueue
-</div>
+

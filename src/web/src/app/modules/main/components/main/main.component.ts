@@ -177,7 +177,7 @@ export class MainComponent implements OnInit, AfterViewInit {
     logMessage.direction = direction;
     logMessage.type = type;
     logMessage.message = JSON.stringify(message, null, 4);
-    this.messages.add(logMessage, {at:0});
+    this.messages.add(logMessage, {at: 0});
   }
 
   public openSocket() {
@@ -252,26 +252,5 @@ export class MainComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.noiseQueue.first().play();
-
-    const ev = new CustomEvent(
-      'appMessage',
-      {
-        detail: {
-          channel: 'queue',
-          method: 'PUT',
-          body: [
-            {track_id: 154258944, track_provider_id: 'soundcloud'},
-            {track_id: 6469900, track_provider_id: 'soundcloud'},
-            {track_id: 162998530, track_provider_id: 'soundcloud'},
-            {track_id: 4323319, track_provider_id: 'soundcloud'},
-            {track_id: 'KfCcTDz5YiU', track_provider_id: 'youtube'},
-            {track_id: 'gra4ugWIzLE', track_provider_id: 'youtube'},
-            {track_id: 'lAwYodrBr2Q', track_provider_id: 'youtube'},
-          ]
-        }
-      }
-    );
-
-    window.dispatchEvent(ev);
   }
 }
