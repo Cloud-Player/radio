@@ -3,6 +3,7 @@ xheaders = False
 static_path = 'static'
 
 font_file = 'src/cloudplayer/iokit/font/RobotoMono-Regular.ttf'
+cookie_file = 'tok_v1.txt'
 
 allowed_origins = [
     'http://localhost:4200',
