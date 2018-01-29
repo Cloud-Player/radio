@@ -33,6 +33,9 @@ class Volume(Potentiometer):
             self.publish(Potentiometer.VALUE_CHANGED, self.mute * self.value)
             self.mute = not self.mute
 
+    def echo_volume(self, event):
+        self.publish(Potentiometer.VALUE_CHANGED, self.value)
+
 
 class Frequency(Potentiometer):
 
