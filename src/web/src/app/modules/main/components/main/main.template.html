@@ -1,36 +1,56 @@
-<label [ngClass]="{'open': socketStatus==='SOCKET_OPEN'}">
-  Socket Url
-  ws://<input type="url" [(ngModel)]="socketUrl" (ngModelChange)="stopRetry()">
-  <button *ngIf="socketStatus==='SOCKET_WAITING'"
-          (click)="openSocket()">Connect</button>
-  <button *ngIf="socketStatus==='SOCKET_OPEN_RETRY'"
-          (click)="stopRetry()">Stop Retry</button>
-  {{socketStatus}}
-  <span *ngIf="socketStatus==='SOCKET_OPEN_RETRY'">(in {{socketRetryProgress/1000}}s)</span>
-</label>
-<hr>
-<div>
-  <app-player-manager
-    [playQueue]="playQueue"
-    [volume]="playerVolume"
-    [hidden]="!showPlayer">
-  </app-player-manager>
-  <app-player-manager
-    [playQueue]="noiseQueue"
-    [volume]="noiseVolume"
-    hidden>
-  </app-player-manager>
-</div>
-<div>
-  <label>
-    Show Player
-    <input type="checkbox" [(ngModel)]="showPlayer">
-  </label>
-</div>
-<hr>
-<app-socket-mock-controls
-  [playQueue]="playQueue"
-  [volume]="volume"
-  [noise]="noise"
-  [isLoading]="isLoading">
-</app-socket-mock-controls>
+<section class="ui">
+  <div class="player">
+    <label [ngClass]="{'open': socketStatus==='SOCKET_OPEN'}">
+      Socket Url
+      ws://<input type="url" [(ngModel)]="socketUrl" (ngModelChange)="stopRetry()">
+      <button *ngIf="socketStatus==='SOCKET_WAITING'"
+              (click)="openSocket()">Connect
+      </button>
+      <button *ngIf="socketStatus==='SOCKET_OPEN_RETRY'"
+              (click)="stopRetry()">Stop Retry
+      </button>
+      {{socketStatus}}
+      <span *ngIf="socketStatus==='SOCKET_OPEN_RETRY'">(in {{socketRetryProgress/1000}}s)</span>
+    </label>
+    <hr>
+    <div>
+      <app-player-manager
+        [playQueue]="playQueue"
+        [volume]="playerVolume"
+        [hidden]="!showPlayer">
+      </app-player-manager>
+      <app-player-manager
+        [playQueue]="noiseQueue"
+        [volume]="noiseVolume"
+        hidden>
+      </app-player-manager>
+    </div>
+    <div>
+      <label>
+        Show Player
+        <input type="checkbox" [(ngModel)]="showPlayer">
+      </label>
+    </div>
+    <hr>
+    <app-socket-mock-controls
+      [playQueue]="playQueue"
+      [volume]="volume"
+      [noise]="noise"
+      [isLoading]="isLoading">
+    </app-socket-mock-controls>
+  </div>
+
+  <div class="log">
+    <ul>
+      <li *ngFor="let logMessage of messages.models">
+        <span *ngIf="logMessage.isIncoming()">-->IN</span>
+        <span *ngIf="logMessage.isOutgoing()"><--OUT</span>
+        {{logMessage.type}}
+        {{logMessage.timestamp}}
+        <pre>
+          {{logMessage.message}}
+        </pre>
+      </li>
+    </ul>
+  </div>
+</section>
