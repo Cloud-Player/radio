@@ -28,9 +28,13 @@ export class SocketMockControlsComponent {
   constructor() {
     this.queue = `
     [
-      {"track_id":130470654,"track_provider_id":"soundcloud"},
-      {"track_id":"lAwYodrBr2Q","track_provider_id":"youtube"},
-      {"track_id":337816824,"track_provider_id":"soundcloud"}
+      {"track_id": 154258944, "track_provider_id": "soundcloud"},
+      {"track_id": 6469900, "track_provider_id": "soundcloud"},
+      {"track_id": 162998530, "track_provider_id": "soundcloud"},
+      {"track_id": 4323319, "track_provider_id": "soundcloud"},
+      {"track_id": "gra4ugWIzLE", "track_provider_id": "youtube"},
+      {"track_id": "KfCcTDz5YiU", "track_provider_id": "youtube"},
+      {"track_id": "lAwYodrBr2Q", "track_provider_id": "youtube"}
     ]`;
   }
 
