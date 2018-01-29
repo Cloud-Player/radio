@@ -5,24 +5,29 @@
 
 ## wire up
 
-![fritzing](https://raw.githubusercontent.com/Cloud-Player/radio/master/schematic.jpg)
+Wire up the Raspberry with the components according to the fritzing schematic.
+
+<img width=300 src="https://raw.githubusercontent.com/Cloud-Player/radio/master/schematic.jpg">
 
 ## setup
 - download raspbian lite
 ```
 curl -L https://downloads.raspberrypi.org/raspbian_lite_latest | tar -xf - -C ~/Desktop/
 ```
+
 - install etcher
 ```
 brew cask install etcher
 open /Applications/Etcher.app
 ```
+
 - flash raspbian onto sd card using etcher
 - place an empty file called `ssh` on the raspbian boot partion
 ```
 cd /Volumes/boot
 touch ssh
 ```
+
 - create a file named `wpa_supplicant.conf` and insert your wifi credentials
 ```
 ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
@@ -44,6 +49,7 @@ ssh pi@RASPBERRY_IP
 ```
 sudo raspi-config
 ```
+
 - change your user password to something other that the default
 - set your locale to `en_US.UTF-8` (hint: use spacebar to de/select)
 - under `Interfacing Options` enable the SPI kernel module
@@ -57,6 +63,7 @@ chromium-browser \
 git \
 libjpeg9 \
 libjpeg9-dev \
+supervisor \
 python-alsaaudio \
 python3-pillow \
 python3-pip \
@@ -70,16 +77,33 @@ python3-venv
 sudo usermod -a -G spi,gpio pi
 ```
 
-
 ## configure miniamp
 
-https://www.hifiberry.com/build/documentation/configuring-linux-3-18-x
+- open `/boot/config.txt` to remove the line
+```
+dtparam=audio=on
+```
+
+- and add the line
+```
+dtoverlay=hifiberry-dac
+```
+
+- for reference see https://www.hifiberry.com/build/documentation/configuring-linux-3-18-x
 
 ## configure alsa
 
-https://support.hifiberry.com/hc/en-us/articles/205377202-Adding-software-volume-control
+- copy the `asound.conf` from the repository to `/etc/asound.conf`
+- for reference see https://support.hifiberry.com/hc/en-us/articles/205377202-Adding-software-volume-control
 
-## cloudplayer radio
+## configure supervisor
+
+- copy the `supervisor.conf` to `/etc/supervisor/conf.d/cloudplayer.conf`
+
+## cloudplayer engine
+
+The cloudplayer engine runs an event loop to handle the raspberry io interface
+and communicate physical user input to the headless player and the OLED.
 
 ### install
 ```
@@ -96,4 +120,25 @@ bin/api
 ```
 bin/pip install -e .[test]
 bin/test
+```
+
+## headless player
+
+The cloudplayer headless player runs inside a chromium browser and handles
+media playback. It is forked from the cloudplayer web application.
+
+### intall
+```
+cd src/web
+npm install
+```
+
+### develop
+```
+npm start
+```
+
+### test
+```
+npm test
 ```
