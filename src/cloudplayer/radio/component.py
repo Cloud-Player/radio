@@ -6,7 +6,6 @@
     :license: Apache-2.0, see LICENSE for details
 """
 import functools
-import math
 import random
 
 from PIL import Image, ImageFilter
@@ -36,9 +35,27 @@ class Volume(Potentiometer):
 
 class Frequency(Potentiometer):
 
+    ENTER_ETHER = 'ENTER_ETHER'
+    EXIT_ETHER = 'EXIT_ETHER'
+
+    def __init__(self, *args, **kw):
+        super().__init__(*args, **kw)
+        self.in_ether = False
+
     def update_value(self, value):
-        value = 1.0 - (max(math.cos(x), 0.0))
-        super().update_value(value)
+        value = max(min(value, 1.0), 0.0)
+        if self.in_ether:
+            if random.random() > 0.75:
+                self.publish(Frequency.ENTER_ETHER, value)
+        elif value == 0.0 or value == 1.0
+            self.in_ether = True
+        elif self.value != value:
+            self.value = value
+            self.publish(Frequency.VALUE_CHANGED, value)
+
+    def exit_ether(self, event):
+        self.in_ether = False
+        self.publish(Frequency.EXIT_ETHER, self.value)
 
 
 class Display(BaseDisplay):
@@ -93,7 +110,7 @@ class Player(Component):
 
     AUTH_START = 'AUTH_START'
     AUTH_DONE = 'AUTH_DONE'
-    CTRL_NEXT = 'CTRL_NEXT'
+    QUEUE_CHANGED = 'QUEUE_CHANGED'
     QUEUE_ITEM = 'QUEUE_ITEM'
 
     def __init__(self):
@@ -126,7 +143,7 @@ class Player(Component):
         return True
 
     def on_open(self, event):
-        if self.track is None:
+        if not self.track:
             self.add_callback(self.switch_station)
 
     def on_message(self, event):
@@ -135,9 +152,8 @@ class Player(Component):
             self.add_callback(func)
 
     def frequency_changed(self, event):
-        if event.value == 1.0 and self.track:
-            self.track = None
-            self.add_callback(self.switch_station)
+        self.track = None
+        self.add_callback(self.switch_station)
 
     @tornado.gen.coroutine
     def resolve_item(self, item):
@@ -151,7 +167,7 @@ class Player(Component):
         if self.is_logged_in:
             response = yield self.fetch('/playlist/cloudplayer/random')
             playlist = tornado.escape.json_decode(response.body)
-            self.publish(self.CTRL_NEXT, playlist['items'])
+            self.publish(self.QUEUE_CHANGED, playlist['items'])
         else:
             app_log.info('not logged in yet')
 
