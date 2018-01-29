@@ -121,7 +121,6 @@ export class NestedModel extends Model {
     if (model instanceof NestedModel) {
       json = model._prepareDataForServer();
     } else {
-      console.log(arguments);
       json = super.toJSON.apply(model, arguments);
     }
 
