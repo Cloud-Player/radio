@@ -3,7 +3,7 @@ xheaders = False
 static_path = 'static'
 
 font_file = '/usr/share/fonts/RobotoMono-Regular.ttf'
-cookie_file = '/home/pi/radio/tok_v1.txt'
+cookie_file = '/home/pi/radio/tok_v1.cookie'
 
 allowed_origins = [
     'http://localhost:4200',
