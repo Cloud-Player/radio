@@ -3,11 +3,6 @@ html, body {
   padding: 0;
 }
 
-app-player-manager {
-  height: 200px;
-  width: 200px;
-}
-
 .open {
   background: #15ff15;
   padding: 9px;
@@ -21,7 +16,27 @@ app-player-manager {
 
   .player {
     flex-grow: 1;
-    height: 100%;
+    max-height: 320px;
+
+    .player-holder{
+      height: inherit;
+      display: flex;
+
+      .players{
+        min-width: 320px;
+        max-width: 320px;
+        margin-right: 20px;
+        app-player-manager {
+          height: 320px;
+          width: 320px;
+        }
+      }
+    }
+
+    .playqueue{
+      height: 100%;
+      overflow: scroll;
+    }
   }
 
   .log {
