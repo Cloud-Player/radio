@@ -71,12 +71,12 @@ def compose():
     player.subscribe(player.QUEUE_ITEM, display.current_track)
 
     mute = Input(13)
-    volume = Volume(5, 6, initial=0.1)
+    volume = Volume(5, 6, initial=0.01)
     mute.subscribe(mute.VALUE_CHANGED, volume.toggle_mute)
     volume.subscribe(volume.VALUE_CHANGED, display.show_volume)
     volume.subscribe(volume.VALUE_CHANGED, server.update_volume)
 
-    frequency = Frequency(27, 17, steps=10.0)
+    frequency = Frequency(27, 17, steps=12.0)
     frequency.subscribe(frequency.VALUE_CHANGED, display.filter_image)
     frequency.subscribe(frequency.VALUE_CHANGED, player.frequency_changed)
     frequency.subscribe(frequency.VALUE_CHANGED, server.update_noise)
