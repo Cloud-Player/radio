@@ -17,7 +17,7 @@ To preserve the analogue flair of radio receivers, we want to build a portable l
 ## hardware
 
 To build a portable cloud-player radio we used the following hardware. However,
-with some modification, most components could easily be switch out.
+with some modification, most components could easily be switched out.
 
 - raspberry https://www.conrad.de/de/raspberry-pi-3-model-b-1-gb-ohne-betriebssystem-1419716.html
 - amplifier https://www.hifiberry.com/shop/boards/miniamp/
@@ -34,7 +34,7 @@ Wire up the Raspberry with the components according to the fritzing schematic.
 
 ## setup
 
-- download raspbian lite on your computer
+- download raspbian lite to your computer
 ```
 curl -L https://downloads.raspberrypi.org/raspbian_lite_latest | tar -xf - -C ~/Desktop/
 ```
