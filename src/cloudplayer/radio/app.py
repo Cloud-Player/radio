@@ -73,7 +73,7 @@ def compose():
 
     player.subscribe(player.AUTH_START, display.show_token)
     player.subscribe(player.QUEUE_CHANGED, server.update_queue)
-    player.subscribe(server.QUEUE_CHANGED, volume.echo_volume)
+    player.subscribe(player.QUEUE_CHANGED, volume.echo_volume)
     player.subscribe(player.QUEUE_ITEM, display.current_track)
     player.subscribe(player.QUEUE_ITEM, frequency.exit_ether)
 
