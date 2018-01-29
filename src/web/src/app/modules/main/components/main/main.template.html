@@ -33,7 +33,7 @@
             {{item.track.id}}
             <span *ngIf="item.track.title">- {{item.track.title}}</span>
             - {{item.track.provider}}
-            <span *ngIf="item.duration && item.progress">{{item.progress/item.duration}}%</span>
+            <span *ngIf="item.duration && item.progress">{{getProgress()}}%</span>
           </li>
         </ul>
         <ul *ngIf="playQueue.length===0">
