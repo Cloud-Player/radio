@@ -10,6 +10,10 @@ from cloudplayer.iokit.channel import Input
 
 
 class RotaryEncoder(Component):
+    """Rotaion encoder, that is a composite component made up of two inputs.
+    Based on the phase they are triggered in, a rotation direction can be
+    inferred.
+    """
 
     ROTATE_LEFT = 'ROTATE_LEFT'
     ROTATE_RIGHT = 'ROTATE_RIGHT'
@@ -38,6 +42,10 @@ class RotaryEncoder(Component):
 
 
 class Potentiometer(Component):
+    """Potentiometer-like abstraction which encloses a rotary encoder.
+    A potentiometer has a pre-defined value range, whereas a rotary encoder
+    rotates endlessly.
+    """
 
     VALUE_CHANGED = 'VALUE_CHANGED'
 

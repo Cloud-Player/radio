@@ -66,7 +66,7 @@ def compose():
     server = Server()
     player = Player()
     mute = Input(13)
-    volume = Volume(5, 6, initial=0.5)
+    volume = Volume(5, 6, initial=0.1)
     frequency = Frequency(27, 17, steps=10.0)
     skip = Input(26)
 

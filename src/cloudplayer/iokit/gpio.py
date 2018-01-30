@@ -11,6 +11,9 @@ except (ImportError, RuntimeError):
     import mock
 
     class MockGPIO(mock.MagicMock):
+        """GPIO library can't be installed on non-raspberry systems,
+        so we need to mock it for development.
+        """
 
         HIGH = 1
         LOW = 0
@@ -38,6 +41,7 @@ except (ImportError, RuntimeError):
 
 
 class GPIOManager(object):
+    """GPIO manager for deferring setup and teardown of IO lib"""
 
     @property
     def gpio(self):

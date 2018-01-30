@@ -16,6 +16,7 @@ from cloudplayer.iokit.component import Component
 
 
 class Display(Component):
+    """Generic luma-driver powered display with custom frame logic"""
 
     FONT_SIZE = 20
 
@@ -25,10 +26,15 @@ class Display(Component):
             opt.options['font_file'], self.FONT_SIZE, 0, 'unic')
         self.device = device
         self.runner = None
+        self.filter = None
         self.frame = Image.new(device.mode, device.size)
         self.key_frame = Image.new(device.mode, device.size)
 
     def draw(self, image, frame=True, key_frame=False):
+        """Draws an image with cropping and optional frame caching.
+        Frames are cropped and filtered and can be repainted as is.
+        Key frames are only cropped and should be refiltered.
+        """
         if image is None:
             return
         width, height = image.size
@@ -42,14 +48,18 @@ class Display(Component):
         if key_frame:
             self.key_frame = image.copy()
         if frame:
-            image = image.filter(self.filter)
+            if self.filter:
+                image = image.filter(self.filter)
             self.frame = image.copy()
         self.device.display(image)
 
     def text(self, text, timeout=None):
+        """Draws a text with an optional timeout in miliseconds.
+        After that, the last frame is restored.
+        """
         image = Image.new(self.device.mode, self.device.size)
         draw = ImageDraw.Draw(image)
-        draw.text((0, 0), text, fill='white', align='center', font=self.font)
+        draw.text((5, 35), text, fill='white', align='center', font=self.font)
         self.draw(image, frame=False)
         if timeout:
             ioloop = tornado.ioloop.IOLoop.current()

@@ -13,6 +13,9 @@ import tornado.queues
 
 
 class Event(object):
+    """Event that was fired by a publisher and describes an action.
+    The attached value is optional.
+    """
 
     def __init__(self, action, publisher, value=None):
         self.action = action
@@ -26,12 +29,17 @@ class Event(object):
 
 
 class EventManager(tornado.ioloop.PeriodicCallback):
+    """Event manager that runs itself as a tornado ioloop callback.
+    On each tick, it routes any queued events according to the current
+    subscription map, and asynchronously executes the callbacks.
+    Between ticks, it accepts new events and queues them.
+    """
 
     subscriptions = collections.defaultdict(set)
     queue = tornado.queues.Queue(maxsize=1024)
 
     def __init__(self, callback_time=30):
-        super().__init__(self.process, callback_time)
+        super().__init__(self.tick, callback_time)
 
     @classmethod
     def add_subscription(cls, action, publisher, subscriber):
@@ -51,7 +59,7 @@ class EventManager(tornado.ioloop.PeriodicCallback):
         cls.queue.put_nowait(event)
 
     @classmethod
-    async def process(cls):
+    async def tick(cls):
         async for event in cls.queue:
             try:
                 trigger = '{}@{}'.format(event.action, event.publisher.uuid)

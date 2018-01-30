@@ -15,6 +15,9 @@ from cloudplayer.iokit.component import Component
 
 
 class Handler(tornado.websocket.WebSocketHandler):
+    """Abstract handler class that accepts any socket request from an allowed
+    orgin, and attaches the tornado callbacks to the server component.
+    """
 
     def __init__(self, request, application,
                  on_open=None, on_message=None, on_close=None):
@@ -64,6 +67,9 @@ class Handler(tornado.websocket.WebSocketHandler):
 
 
 class Server(Component):
+    """Simple websocket-only web server, that allows only one client to be
+    connected and connects the websocket lifecycle to iokit events.
+    """
 
     SOCKET_OPENED = 'SOCKET_OPENED'
     SOCKET_CLOSED = 'SOCKET_CLOSED'
@@ -90,7 +96,7 @@ class Server(Component):
         self.publish(self.SOCKET_OPENED)
 
     def on_message(self, message):
-        app_log.info('message was received %s' % message)
+        app_log.info('message received %s' % message)
         self.publish(self.SOCKET_MESSAGE, message)
 
     def on_close(self):
