@@ -1,5 +1,4 @@
 [![Build Status](https://travis-ci.org/Cloud-Player/radio.svg?branch=master)](https://travis-ci.org/Cloud-Player/radio)
-[![Code Coverage](https://codecov.io/gh/Cloud-Player/radio/branch/master/graph/badge.svg)](https://codecov.io/gh/Cloud-Player/radio)
 
 # cloud-player radio
 
@@ -7,12 +6,25 @@ by Nicolas Drebenstedt and Alexander Zarges
 
 ## abstract
 
-In 2018 music streaming is ubiquitous and consumers can access millions of songs and artists.
+These days, music streaming is ubiquitous and consumers can access millions of songs and artists.
 But having so many choices, often leaves us undecided what to listen to. Recommendation engines try to solve this problem but tend to push people into a filter bubble.
 Looking back a century, broadcast radio has always provided a variety of music to listen to, curated by humans – not AI.
 We want to combine the unlimited choices of streaming music services with the charm of hand-picked music stations. With cloud-radio everyone can be radio host and broadcast to the world.
 Cloud-radio will be built on top of cloud-player, a multi-provider streaming app, and allow users to create public radio stations, which others can discover and listen to in realtime.
 To preserve the analogue flair of radio receivers, we want to build a portable listening device with a super simple haptic UI: A volume control and a rotary tuner to switch stations.
+
+## project
+
+There is a short presentation on the project in this repository called `presentation.pdf`.
+
+The codebase is comprised of several parts:
+- src/cloudplayer/iokit contains generic io components and the event loop
+- src/cloudplayer/radio extends these components to implement the radio engine
+- src/web/app contains the headless angular-based player application
+
+The radio also relies on these two other repositories:
+- https://github.com/Cloud-Player/api which contains the cloud-player API code
+- https://github.com/Cloud-Player/web with the full-fledged cloud-player web app
 
 ## hardware
 
@@ -122,11 +134,6 @@ dtoverlay=hifiberry-dac
 - copy the `asound.conf` from the repository to `/etc/asound.conf`
 - for reference see https://support.hifiberry.com/hc/en-us/articles/205377202-Adding-software-volume-control
 
-## configure supervisor
-
-- the supervisor manages application starts on reboot or crashes
-- copy the `supervisor.conf` to `/etc/supervisor/conf.d/cloudplayer.conf`
-
 ## cloudplayer engine
 
 The cloudplayer engine runs an event loop to handle the raspberry io interface
@@ -138,7 +145,7 @@ python3 -m venv --upgrade --copies .
 bin/pip install -e .
 ```
 
-### run
+### develop
 ```
 bin/radio
 ```
@@ -154,7 +161,17 @@ cd src/web
 npm install
 ```
 
-### run
+### develop
 ```
 npm start
 ```
+
+## configure supervisor
+
+- the supervisor manages application starts on reboot
+- copy the `supervisor.conf` to `/etc/supervisor/conf.d/cloudplayer.conf`
+- and adjust the installation directories
+
+## done
+
+- reboot your raspberry and - after authentication - it should start playing music
