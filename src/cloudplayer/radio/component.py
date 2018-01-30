@@ -23,6 +23,7 @@ from cloudplayer.iokit import Component, Potentiometer
 
 
 class Volume(Potentiometer):
+    """Volume poti that can toggle its mute state and echo its value"""
 
     def __init__(self, *args, **kw):
         super().__init__(*args, **kw)
@@ -38,6 +39,10 @@ class Volume(Potentiometer):
 
 
 class Frequency(Potentiometer):
+    """Frequency poti that emulates a frequency band, snaps into stations
+    and locks into an ether state, which can only be escaped when the
+    player has finished loading the next track.
+    """
 
     ENTER_ETHER = 'ENTER_ETHER'
     EXIT_ETHER = 'EXIT_ETHER'
@@ -82,13 +87,16 @@ class Frequency(Potentiometer):
 
 
 class Display(BaseDisplay):
+    """Custom display class that represents the different visual screens
+    of the cloud-player radio. Token, volume, and cover art - for now.
+    """
 
     def __init__(self, device):
         super().__init__(device)
         self.filter = ImageFilter.ModeFilter(0)
 
     def show_volume(self, event):
-        self.text('volume\n{}%'.format(int(event.value * 100)), 500)
+        self.text('volume\n{}%'.format(int(event.value * 100)), 1000)
 
     def show_token(self, event):
         self.text('token\n{}'.format(event.value['id']))
@@ -109,6 +117,9 @@ class Display(BaseDisplay):
 
 
 class Server(BaseServer):
+    """Websocket server that connects hardware events to the player
+    via a custom JSON protocol.
+    """
 
     def write(self, **kw):
         for channel, body in kw.items():
@@ -130,6 +141,9 @@ class Server(BaseServer):
 
 
 class Player(Component):
+    """Player state handler that completes the token authorization flow and
+    talks to the cloud-player API backend on behalf of the user.
+    """
 
     AUTH_START = 'AUTH_START'
     AUTH_DONE = 'AUTH_DONE'

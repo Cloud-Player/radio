@@ -10,6 +10,7 @@ from cloudplayer.iokit.gpio import GPIO
 
 
 class Channel(Component):
+    """Abstract base class for raspberry io channels"""
 
     def __init__(self, channel, in_out, **kw):
         super().__init__()
@@ -24,6 +25,7 @@ class Channel(Component):
 
 
 class Input(Channel):
+    """Input channel that connects GPIO events to iokit event loop"""
 
     VALUE_CHANGED = 'VALUE_CHANGED'
 
@@ -41,12 +43,10 @@ class Input(Channel):
 
 
 class Output(Channel):
+    """Output channel for generic output devices"""
 
     def __init__(self, channel):
-        self.__init__(channel, GPIO.OUT, initial=GPIO.LOW)
+        super().__init__(channel, GPIO.OUT, initial=GPIO.LOW)
 
     def put(self, state):
         GPIO.output(self.channel, state)
-
-    def toggle(self):
-        self.put(not self.get())

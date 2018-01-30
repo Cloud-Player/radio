@@ -13,6 +13,7 @@ from cloudplayer.iokit.event import Event, EventManager
 
 
 class Component(object):
+    """Abstract base component which offers shorthands to event system"""
 
     def __init__(self, *args, **kw):
         self.uuid = uuid.uuid4().hex
