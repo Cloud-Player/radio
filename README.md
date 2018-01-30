@@ -131,7 +131,7 @@ dtoverlay=hifiberry-dac
 ## configure alsa
 
 - the linux sound engine alsa can route and manipulate audio streams
-- copy the `asound.conf` from the repository to `/etc/asound.conf`
+- copy the `asound.conf` from this repository to `/etc/asound.conf`
 - for reference see https://support.hifiberry.com/hc/en-us/articles/205377202-Adding-software-volume-control
 
 ## cloudplayer engine
