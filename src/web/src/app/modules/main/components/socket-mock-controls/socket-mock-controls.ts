@@ -1,15 +1,16 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 import {PlayQueue} from '../../../player/collections/play-queue';
 import {PlayQueueItem} from '../../../player/models/play-queue-item';
 import {MessageMethodTypes} from '../../../shared/services/message.service';
 import {WindowMessagesService} from '../../../shared/services/window-messages.service';
+import {SocketMessagesService} from '../../../shared/services/socket-messages.service';
 
 @Component({
   selector: 'app-socket-mock-controls',
   templateUrl: './socket-mock-controls.html',
   styleUrls: ['./socket-mock-controls.scss'],
 })
-export class SocketMockControlsComponent {
+export class SocketMockControlsComponent implements OnInit{
   public isPlaying = false;
   public queue: string;
   public volume = 100;
@@ -21,7 +22,7 @@ export class SocketMockControlsComponent {
   @Input()
   public playQueue: PlayQueue<PlayQueueItem>;
 
-  constructor() {
+  constructor(private socketMessagesService: SocketMessagesService) {
     this.queue = `
     [
       {"track_id": 154258944, "track_provider_id": "soundcloud"},
@@ -83,5 +84,10 @@ export class SocketMockControlsComponent {
       method: MessageMethodTypes.PUT,
       body: frequency
     });
+  }
+
+  ngOnInit(): void {
+    this.socketMessagesService.subscribe('volume', MessageMethodTypes.PUT, this.setVolume.bind(this));
+    this.socketMessagesService.subscribe('noise', MessageMethodTypes.PUT, this.setNoise.bind(this));
   }
 }
