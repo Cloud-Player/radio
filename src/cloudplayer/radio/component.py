@@ -31,11 +31,11 @@ class Volume(Potentiometer):
 
     def toggle_mute(self, event):
         if event.value:
-            self.publish(Potentiometer.VALUE_CHANGED, self.mute * self.value)
+            self.publish(Volume.VALUE_CHANGED, self.mute * self.value)
             self.mute = not self.mute
 
     def echo_volume(self, event):
-        self.publish(Potentiometer.VALUE_CHANGED, self.value)
+        self.publish(Volume.VALUE_CHANGED, self.value)
 
 
 class Frequency(Potentiometer):
