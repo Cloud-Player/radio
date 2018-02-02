@@ -1,5 +1,4 @@
 [![Build Status](https://travis-ci.org/Cloud-Player/radio.svg?branch=master)](https://travis-ci.org/Cloud-Player/radio)
-(https://codecov.io/gh/Cloud-Player/radio)
 [![JS Angular](https://img.shields.io/badge/js-angular-blue.svg)](https://angularjs.org)
 [![PY Tornado](https://img.shields.io/badge/py-tornado-blue.svg)](http://www.tornadoweb.org)
 
