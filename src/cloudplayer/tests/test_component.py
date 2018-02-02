@@ -1,4 +1,6 @@
 import mock
+import tornado.ioloop
+
 from cloudplayer.iokit import Component
 from cloudplayer.iokit import EventManager
 
@@ -32,3 +34,13 @@ def test_component_should_unsubscribe_from_event():
     assert c2 in EventManager.subscriptions.get(trigger)
     c1.unsubscribe('ACTION', c2)
     assert c2 not in EventManager.subscriptions.get(trigger)
+
+
+def test_component_should_register_callback_on_ioloop(mocker):
+    def callback(*_):
+        pass
+    ioloop = mock.MagicMock()
+    mocker.patch('tornado.ioloop.IOLoop.current', lambda: ioloop)
+    comp = Component()
+    comp.add_callback(callback)
+    ioloop.add_callback.assert_called_once_with(callback)

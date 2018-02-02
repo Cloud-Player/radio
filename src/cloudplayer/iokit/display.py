@@ -21,6 +21,7 @@ class Display(Component):
     FONT_SIZE = 20
 
     def __init__(self, device):
+        """The display needs to be initialized with a `luma.core.device`"""
         super().__init__()
         self.font = ImageFont.truetype(
             opt.options['font_file'], self.FONT_SIZE, 0, 'unic')

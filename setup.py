@@ -29,6 +29,7 @@ setup(
             'mock',
             'pylint',
             'pytest-cov',
+            'pytest-mock',
             'pytest-pep8',
             'pytest-remove-stale-bytecode',
             'pytest-timeout',
