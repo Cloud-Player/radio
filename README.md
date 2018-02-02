@@ -52,16 +52,10 @@ Wire up the Raspberry with the components according to the fritzing schematic.
 
 - download raspbian lite to your computer
 ```
-curl -L https://downloads.raspberrypi.org/raspbian_lite_latest | tar -xf - -C ~/Desktop/
+curl -L https://downloads.raspberrypi.org/raspbian_lite_latest | tar -xf - -C ~/
 ```
 
-- install etcher if using a mac
-```
-brew cask install etcher
-open /Applications/Etcher.app
-```
-
-- flash raspbian onto sd card using etcher (or equivalent)
+- flash raspbian onto sd card (if using a Mac, check out `etcher`)
 - place an empty file called `ssh` on the raspbian boot partion
 ```
 cd /Volumes/boot
