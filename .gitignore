@@ -1,11 +1,12 @@
 .cache
 .eggs
 .idea
+.coverage
+.pytest_cache
 *.pyc
 *.pyo
 *.egg-info
 *.cookie
-.coverage
 bin
 share
 dist
