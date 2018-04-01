@@ -2,7 +2,6 @@
 [![JS Angular](https://img.shields.io/badge/js-angular-blue.svg)](https://angularjs.org)
 [![PY Tornado](https://img.shields.io/badge/py-tornado-blue.svg)](http://www.tornadoweb.org)
 
-
 # cloud-player radio
 
 by Nicolas Drebenstedt and Alexander Zarges
@@ -15,6 +14,8 @@ Looking back a century, broadcast radio has always provided a variety of music t
 We want to combine the unlimited choices of streaming music services with the charm of hand-picked music stations. With cloud-radio everyone can be radio host and broadcast to the world.
 Cloud-radio will be built on top of cloud-player, a multi-provider streaming app, and allow users to create public radio stations, which others can discover and listen to in realtime.
 To preserve the analogue flair of radio receivers, we want to build a portable listening device with a super simple haptic UI: A volume control and a rotary tuner to switch stations.
+
+[![Imgur](https://i.imgur.com/RFn24iJ.png)](https://drive.google.com/file/d/1w66yOvXvzBVmPQ2biMzG5pyp0Z4u0b_X/view "Play video")
 
 ## project
 
